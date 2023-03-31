@@ -1,3 +1,4 @@
+/* General styles */
 * {
   box-sizing: border-box !important;
 }
@@ -15,21 +16,8 @@ a {
   text-decoration: none;
 }
 
-.main-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-  width: 100%;
-}
-
-.app-header {
-  height: 50px;
-}
-
-.pages-container {
-  flex: 1;
-}
-
-.app-footer {
-  min-height: 25px;
+.gradient-bg {
+  background: transparent
+    linear-gradient(180deg, #3c4f59 0%, #1e2932 100%) 0% 0% no-repeat
+    padding-box;
 }
