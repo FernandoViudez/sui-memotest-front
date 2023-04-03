@@ -1,0 +1,34 @@
+.memotestCard {
+  background-color: transparent;
+  border: 1px solid var(--border-gray);
+  perspective: 1000px;
+}
+
+.memotestCard,
+.flipAnimContainer {
+  width: 100%;
+  height: 100%;
+}
+
+.flipAnimContainer {
+  position: relative;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.faceDown,
+.cardBack {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden; /* Safari */
+  backface-visibility: hidden;
+}
+
+.cardBack {
+  transform: rotateY(180deg);
+}
+
+.reveal {
+  transform: rotateY(180deg);
+}
