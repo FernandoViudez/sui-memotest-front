@@ -1,13 +1,20 @@
+import { GamePreviewCard } from "@/components/GamePreviewCard/GamePreviewCard";
 import Head from "next/head";
 
 export default function Home() {
   return (
-    <div>
+    <>
       <Head>
         <title>Home</title>
       </Head>
-      {/* TODO: Implement index layout */}
-      Index Page
-    </div>
+      <article className="container ">
+        <div className="m-auto mt-3 mb-5 text-white d-flex flex-column">
+          <h3>Minigames</h3>
+          <hr className="m-0" />
+        </div>
+
+        <GamePreviewCard navigateTo={"/memotest"} />
+      </article>
+    </>
   );
 }

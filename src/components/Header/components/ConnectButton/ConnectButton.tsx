@@ -1,10 +1,28 @@
 import { ConnectModal } from "@suiet/wallet-kit";
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { SuiLogo } from "../SuiLogo";
 import styles from "./ConnectButton.module.css";
 
-export const ConnectButton = () => {
+export const ConnectButton = ({
+  setError,
+}: {
+  setError: Dispatch<
+    SetStateAction<{
+      title?: string;
+      isError: boolean;
+      message: string;
+    }>
+  >;
+}) => {
   const [showModal, setShowModal] = useState(false);
+
+  const onError = (walletError: any) => {
+    const message = walletError.message.split("|")[0].trim();
+    setError({
+      message: message || "Unkown error",
+      isError: true,
+    });
+  };
 
   return (
     <>
@@ -15,6 +33,7 @@ export const ConnectButton = () => {
         <SuiLogo />
       </button>
       <ConnectModal
+        onConnectError={onError}
         open={showModal}
         onOpenChange={(open) => setShowModal(open)}
       />
