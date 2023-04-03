@@ -1,0 +1,37 @@
+.gameplayPreviewCard {
+  height: 400px;
+}
+
+.cardContainer {
+  color: whitesmoke;
+  width: 100%;
+  user-select: none;
+  cursor: pointer;
+}
+
+.cardContainer:hover .imgContainer {
+  filter: opacity(1) grayscale(0);
+  transition: 300ms filter;
+}
+
+.imgContainer {
+  height: 350px;
+  filter: opacity(0.6) grayscale(0.4);
+  transition: 300ms filter;
+}
+
+.playBtn {
+  text-shadow: 0px 0px 3px #333;
+  color: whitesmoke;
+}
+
+.grayLayer:hover strong,
+.grayLayer:hover hr {
+  transition: color;
+}
+
+.gameplayPreviewCard,
+.grayLayer,
+.gameplayPreviewImage {
+  border-radius: 0.2rem !important;
+}

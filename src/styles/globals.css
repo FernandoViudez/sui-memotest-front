@@ -1,3 +1,15 @@
+:host {
+  --soft-black: #2a3037;
+  --soft-white: #f4f4f4;
+  --border-gray: rgba(229, 221, 201, 0.311);
+}
+
+a {
+  text-decoration: none !important;
+  color: unset !important;
+}
+
+/* General styles */
 * {
   box-sizing: border-box !important;
 }
@@ -15,21 +27,8 @@ a {
   text-decoration: none;
 }
 
-.main-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-  width: 100%;
-}
-
-.app-header {
-  height: 50px;
-}
-
-.pages-container {
-  flex: 1;
-}
-
-.app-footer {
-  min-height: 25px;
+.gradient-bg {
+  background: transparent
+    linear-gradient(180deg, #3c4f59 0%, #1e2932 100%) 0% 0% no-repeat
+    padding-box;
 }

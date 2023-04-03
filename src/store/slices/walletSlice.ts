@@ -5,7 +5,7 @@ type ConnectionStatus = "connected" | "processing" | "disconnected";
 interface IWalletInformation {
   walletAddress: string | string[];
   name?: string;
-  wallet?: "Suit" | "MyAlgo" | "Pera";
+  walletName?: string;
 }
 
 interface IWalletError {
@@ -26,20 +26,22 @@ export const walletSlice = createSlice({
   initialState: _initialState,
   name: _name,
   reducers: {
-    tryConnection: (state) => {
-      state.connectionStatus = "processing";
+    resetWallet: (state) => {
+      return {
+        ..._initialState,
+      };
     },
     setWalletInformation: (
       state,
       action: PayloadAction<IWalletInformation>
     ) => {
-      state = {
-        ...state,
+      return {
         ...action.payload,
+        connectionStatus: "connected",
       };
     },
     setError: (state, action: PayloadAction<IWalletError>) => {
-      state = {
+      return {
         ...action.payload,
         ..._initialState,
       };
@@ -47,5 +49,5 @@ export const walletSlice = createSlice({
   },
 });
 
-export const { tryConnection, setWalletInformation, setError } =
+export const { setWalletInformation, setError, resetWallet } =
   walletSlice.actions;
