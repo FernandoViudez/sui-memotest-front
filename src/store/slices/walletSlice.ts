@@ -3,7 +3,7 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 type ConnectionStatus = "connected" | "processing" | "disconnected";
 
 interface IWalletInformation {
-  walletAddress: string | string[];
+  walletAddress: string;
   name?: string;
   walletName?: string;
 }

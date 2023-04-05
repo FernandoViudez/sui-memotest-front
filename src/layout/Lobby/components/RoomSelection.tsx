@@ -1,11 +1,10 @@
+import { RoomStatus } from "@/types/RoomStatus";
 import { Dispatch, SetStateAction } from "react";
 
 export const RoomSelection = ({
   onRoomSelection,
 }: {
-  onRoomSelection: Dispatch<
-    SetStateAction<"create-room" | "join-room" | "unset">
-  >;
+  onRoomSelection: Dispatch<SetStateAction<RoomStatus>>;
 }) => {
   return (
     <article className="h-100 d-flex">

@@ -1,41 +1,49 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CreateRoom } from "./components/CreateRoom/CreateRoom";
 import { RoomList } from "./components/RoomList/RoomList";
 import { RoomSelection } from "./components/RoomSelection";
 import { LobbyView } from "./views/LobbyView";
 
+import { RoomStatus } from "@/types/RoomStatus";
 import styles from "./Lobby.module.css";
 
 export const Lobby = () => {
-  const [room, setRoom] = useState<
-    "create-room" | "join-room" | "unset"
-  >("unset");
-
+  const [roomStatus, setOption] = useState<RoomStatus>("unset");
   const [lobbyReady, setLobbyReady] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (lobbyReady) {
+      setOption(() => "process-finished");
+    }
+  }, [lobbyReady]);
+
+  const onSetLobbyReady = () => {
+    setLobbyReady((state) => !state);
+  };
 
   return (
     <>
       <button
-        onClick={() => setRoom("unset")}
+        onClick={() => setOption("unset")}
         className={styles.fixedBtn}
       >
         Back
       </button>
 
-      {room === "unset" && (
-        <RoomSelection onRoomSelection={setRoom} />
+      {roomStatus === "unset" && (
+        <RoomSelection onRoomSelection={setOption} />
       )}
 
       {/* TODO: create rooms list */}
 
-      {room === "join-room" && (
-        <RoomList onSelectRoom={setLobbyReady} />
+      {roomStatus === "join-room" && (
+        <RoomList onSelectRoom={onSetLobbyReady} />
       )}
 
       {/* TODO: create room form */}
 
-      {room === "create-room" && (
-        <CreateRoom onCreateRoom={setLobbyReady} />
+      {roomStatus === "create-room" && (
+        <CreateRoom onCreateRoom={onSetLobbyReady} />
       )}
 
       {lobbyReady && <LobbyView />}
