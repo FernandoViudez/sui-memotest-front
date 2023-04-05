@@ -4,9 +4,10 @@ import "bootstrap/dist/css/bootstrap.css";
 import { WalletProvider } from "@suiet/wallet-kit";
 import "@suiet/wallet-kit/style.css";
 
+import { MainLayout } from "@/layout/MainLayout";
+
 import type { AppProps } from "next/app";
 import { Provider } from "react-redux";
-import { MainLayout } from "../layout/MainLayout";
 import { store } from "../store";
 
 export default function App({ Component, pageProps }: AppProps) {

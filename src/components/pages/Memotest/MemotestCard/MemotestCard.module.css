@@ -2,6 +2,7 @@
   background-color: transparent;
   border: 1px solid var(--border-gray);
   perspective: 1000px;
+  cursor: pointer;
 }
 
 .memotestCard,

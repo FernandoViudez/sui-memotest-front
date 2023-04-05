@@ -15,7 +15,7 @@ interface IWalletError {
 
 type WalletSlice = IWalletInformation & IWalletError;
 
-const _name = "walletSlice";
+const _name = "wallet";
 
 const _initialState: WalletSlice = {
   connectionStatus: "disconnected",
