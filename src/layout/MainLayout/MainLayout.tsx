@@ -1,4 +1,4 @@
-import { Footer, Header } from "@/components";
+import { Footer, Header } from "@/components/shared";
 import { PropsWithChildren } from "react";
 
 import styles from "./MainLayout.module.css";
