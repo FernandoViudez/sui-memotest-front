@@ -1,64 +1,66 @@
+import { IGameRoom } from "@/interfaces/GameRoom";
 import { IPlayer } from "@/interfaces/Player";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-interface IMemotestRoom {
-  name: string;
-  players: IPlayer[];
-  isAvailable: boolean;
-  id: string;
-}
-
-interface IRoom {
-  rooms: IMemotestRoom[];
-}
-
 interface ILobby {
-  connectedPlayers: IPlayer[];
   lobbyStatus: "ready-to-play" | "pending";
-  roomDetails: IMemotestRoom;
+  currentRoom: IGameRoom | null;
+  connectedPlayers: IPlayer[];
 }
 
 type MemotestSlice = {
   lobby: ILobby | null;
-  rooms: IRoom[];
+  game?: {};
 };
 
 const _name = "memotest";
 
 const _initialState: MemotestSlice = {
-  connectedPlayers: [],
-  lobbyStatus: "pending",
-  currentRoom: null,
-  rooms: [],
+  lobby: null,
 };
 
 export const gameSlice = createSlice({
   name: _name,
   initialState: _initialState,
   reducers: {
-    exitFromRoom: (state) => {
-      state.currentRoom = null;
+    enterLobby: (
+      state,
+      action: PayloadAction<{ room: IGameRoom; newPlayer: IPlayer }>
+    ) => {
+      if (!state.lobby) return;
+      state.lobby.connectedPlayers.push(action.payload.newPlayer);
+      state.lobby.currentRoom = action.payload.room;
     },
-    setRooms: (state, action: PayloadAction<IMemotestRoom[]>) => {
-      return {
-        ...state,
-        rooms: action.payload,
-      };
+    addPlayer: (state, action: PayloadAction<IPlayer>) => {
+      state.lobby?.connectedPlayers.push(action.payload);
     },
-    createRoom: (state, action: PayloadAction<IMemotestRoom>) => {
-      state.rooms.push({ ...action.payload });
-      state.currentRoom = action.payload;
+    startGame: (state) => {
+      if (state.lobby) state.lobby.lobbyStatus = "ready-to-play";
     },
-    selectRoom: (state, action: PayloadAction<IMemotestRoom>) => {
-      state.rooms.push(action.payload);
+    cancelGame: (state) => {
+      if (state.lobby) state.lobby.lobbyStatus = "pending";
     },
-    deleteRoom: (state, action: PayloadAction<string>) => {
-      return {
-        ...state,
-        rooms: state.rooms.filter((r) => r.id === action.payload),
-      };
+    setConnectedPlayers: (
+      state,
+      { payload }: PayloadAction<{ walletAddress: string }>
+    ) => {
+      if (state.lobby?.connectedPlayers.length)
+        state.lobby.connectedPlayers =
+          state.lobby.connectedPlayers.filter(
+            (p) => p.walletAddress !== payload.walletAddress
+          );
+    },
+    exitLobby: (state) => {
+      state.lobby = null;
     },
   },
 });
 
-export const {} = gameSlice.actions;
+export const {
+  enterLobby,
+  addPlayer,
+  startGame,
+  cancelGame,
+  setConnectedPlayers,
+  exitLobby,
+} = gameSlice.actions;
