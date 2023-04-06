@@ -6,7 +6,6 @@ export default function Memotest() {
       <Head>
         <title>Memotest</title>
       </Head>
-      <div>Memotest</div>
     </>
   );
 }
