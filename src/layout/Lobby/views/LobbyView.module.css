@@ -1,0 +1,9 @@
+.mh50vh {
+  min-height: 50vh;
+}
+
+.listGroupItem {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-gray);
+}

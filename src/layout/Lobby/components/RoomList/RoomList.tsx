@@ -18,8 +18,12 @@ export const RoomList = ({
   };
 
   return (
-    <article className="h-100 w-100 d-flex">
-      <ul className="list-group m-auto w-75">
+    <article className="h-100 w-100 p-3 d-flex flex-column">
+      <div>
+        <p className="text-white h5">Rooms</p>
+        <hr className="text-light mt-0" />
+      </div>
+      <ul className="list-group  w-100">
         {rooms.map((r) => (
           <li
             key={r.id}

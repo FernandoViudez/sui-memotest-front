@@ -2,6 +2,7 @@ import Head from "next/head";
 
 import { MemotestCard, Player } from "@/components/pages/Memotest";
 
+import { useProtectRoutes } from "@/hooks/useProtectRoutes/useProtectRoutes";
 import { Lobby } from "@/layout/Lobby";
 import { RootState } from "@/store";
 import { useSelector } from "react-redux";
@@ -9,16 +10,19 @@ import styles from "./Memotest.module.css";
 
 export default function Memotest() {
   const { game } = useSelector((state: RootState) => state.memotest);
+  const { isAuthenticated } = useProtectRoutes("/memotest");
 
   return (
-    <>
-      <Head>
-        <title>Memotest</title>
-      </Head>
-      <div className={`container p-3 ${styles.mainContainer}`}>
-        {game.ready ? <_MemotestPage /> : <Lobby />}
-      </div>
-    </>
+    isAuthenticated() && (
+      <>
+        <Head>
+          <title>Memotest</title>
+        </Head>
+        <div className={`container p-3 ${styles.mainContainer}`}>
+          {game.ready ? <_MemotestPage /> : <Lobby />}
+        </div>
+      </>
+    )
   );
 }
 
