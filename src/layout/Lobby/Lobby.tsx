@@ -23,12 +23,17 @@ export const Lobby = () => {
 
   return (
     <>
-      <button
-        onClick={() => setOption("unset")}
-        className={styles.fixedBtn}
-      >
-        Back
-      </button>
+      {roomStatus !== "unset" && (
+        <button
+          onClick={() => {
+            setLobbyReady(false);
+            setOption("unset");
+          }}
+          className={`btn btn-primary ${styles.fixedBtn}`}
+        >
+          Back
+        </button>
+      )}
 
       {roomStatus === "unset" && (
         <RoomSelection onRoomSelection={setOption} />
