@@ -23,9 +23,7 @@ export default function Memotest() {
 }
 
 function _MemotestPage() {
-  const memotest = [
-    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-  ];
+  const memotest = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
   return (
     <div className="row p-0 m-0 h-100">
       <article className="col-2 d-flex flex-column justify-content-between align-items-center">
