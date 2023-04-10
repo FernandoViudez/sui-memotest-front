@@ -4,7 +4,10 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 
-export const useProtectRoutes = (privateRoute: string) => {
+export const useProtectRoutes = (
+  privateRoute: string,
+  beforeRejectNavigation?: () => void
+) => {
   const wallet = useSelector((state: RootState) => state.wallet);
   const router = useRouter();
 
@@ -17,9 +20,12 @@ export const useProtectRoutes = (privateRoute: string) => {
   // Auth
   useEffect(() => {
     if (privateRoute.includes(router.pathname)) {
-      isAuthenticated()
-        ? router.push(router.pathname)
-        : router.push("/");
+      if (isAuthenticated()) {
+        router.push(router.pathname);
+      } else {
+        beforeRejectNavigation && beforeRejectNavigation();
+        router.push("/");
+      }
     }
   }, [wallet]);
 
