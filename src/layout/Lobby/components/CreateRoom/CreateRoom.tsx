@@ -11,11 +11,7 @@ interface ICreateRoomForm {
   password?: string;
 }
 
-export const CreateRoom = ({
-  onCreateRoom,
-}: {
-  onCreateRoom: () => void;
-}) => {
+export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const { walletAddress, name } = useSelector(
@@ -28,10 +24,7 @@ export const CreateRoom = ({
     handleSubmit,
   } = useForm<ICreateRoomForm>();
 
-  const onSubmit: SubmitHandler<ICreateRoomForm> = ({
-    name,
-    password,
-  }) => {
+  const onSubmit: SubmitHandler<ICreateRoomForm> = ({ name, password }) => {
     dispatch(
       createGameRoom(
         {
@@ -67,8 +60,7 @@ export const CreateRoom = ({
             {...register("name", { required: true, minLength: 3 })}
           />
           <small className="form-text text-warning">
-            {errors?.name &&
-              "The required min length is 3 characters"}
+            {errors?.name && "The required min length is 3 characters"}
           </small>
         </div>
         <div className="mb-5">
@@ -80,8 +72,7 @@ export const CreateRoom = ({
             {...register("password", { minLength: 3 })}
           />
           <small className="form-text text-warning">
-            {errors?.password &&
-              "The required min length is 3 characters"}
+            {errors?.password && "The required min length is 3 characters"}
           </small>
         </div>
         <input

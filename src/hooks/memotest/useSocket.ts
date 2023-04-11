@@ -25,6 +25,7 @@ export const useSocket = () => {
     return {
         connected: isConnected,
         listen,
-        emit
+        emit,
+        clientId: socket.clientId,
     };
 };
