@@ -41,7 +41,6 @@ export const createGameRoom = (
       isAvailable: true,
       id: Date.now() * Math.random() * 10 + "",
     };
-
     dispatch(GameReducer.addRoom(newRoom));
     dispatch(
       GameReducer.enterRoom({

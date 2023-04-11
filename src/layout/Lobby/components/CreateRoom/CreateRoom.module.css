@@ -1,0 +1,11 @@
+.inputStyles,
+.inputStyles:focus {
+  background-color: unset;
+  color: whitesmoke;
+  border: none;
+  border-bottom: 1px solid var(--border-gray);
+  border-radius: 0;
+  padding: 1px 0px;
+  outline: none;
+  box-shadow: none;
+}
