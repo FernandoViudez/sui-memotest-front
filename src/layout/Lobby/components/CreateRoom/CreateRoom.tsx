@@ -3,11 +3,7 @@ import { createGameRoom } from "@/store/slices/memotest";
 import { FormEvent } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
-export const CreateRoom = ({
-  onCreateRoom,
-}: {
-  onCreateRoom: () => void;
-}) => {
+export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   const { walletAddress, name } = useSelector(
