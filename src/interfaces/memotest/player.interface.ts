@@ -1,4 +1,4 @@
-export interface PlayerJoined {
+export interface IPlayerJoined {
   id: number;
 }
-export interface PlayerLeft extends PlayerJoined {}
+export interface IPlayerLeft extends IPlayerJoined {}

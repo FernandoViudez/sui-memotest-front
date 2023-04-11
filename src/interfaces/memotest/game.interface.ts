@@ -1,15 +1,15 @@
-export interface StartGame {
+export interface IStartGame {
   roomId: string;
 }
 
-export interface TurnOverCard {
+export interface ITurnOverCard {
   roomId: string;
   position: number;
 }
 
-export interface CardTurnedOver {
+export interface ICardTurnedOver {
   id: string;
   position: number;
   image: string;
 }
-export interface CardSelected extends CardTurnedOver {}
+export interface ICardSelected extends ICardTurnedOver {}
