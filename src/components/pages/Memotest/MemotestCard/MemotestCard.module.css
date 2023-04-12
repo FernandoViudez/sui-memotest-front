@@ -33,3 +33,15 @@
 .reveal {
   transform: rotateY(180deg);
 }
+
+.disableCursor {
+  pointer-events: none;
+  cursor: initial !important;
+  user-select: none;
+}
+
+.revealedCard {
+  filter: invert(5);
+  -webkit-filter: invert(5);
+  -moz-filter: invert(5);
+}
