@@ -13,6 +13,7 @@ import { IGameConfig } from "../../../../interfaces/memotest/game-config.interfa
 import { SocketEventNames } from "../../../../types/memotest/socket-event-names.enum";
 import { IPlayerJoined } from "../../../../interfaces/memotest/player.interface";
 import { IJoinRoom } from "../../../../interfaces/memotest/room.interface";
+import { SocketError } from "../../../../interfaces/socket-error.interface";
 
 interface IJoinRoomForm {
   roomCode: string;
@@ -37,8 +38,12 @@ export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
       setMinimumBetAmount(config.minimum_bet_amount);
     });
     socket.listen(SocketEventNames.onPlayerJoined, onPlayerJoined);
-    socket.listen(SocketEventNames.onError, console.log);
+    socket.listen(SocketEventNames.onError, handleError);
   });
+
+  function handleError(data: SocketError) {
+    console.log("[handleError] ~> ", data);
+  }
 
   function onPlayerJoined(data: IPlayerJoined) {
     console.log("Player joined ~> ", data.id);
@@ -52,11 +57,13 @@ export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
     const [roomId, gameId] = form.roomCode.split(":");
     const signature = await getSignatureForSockets(socket.clientId);
     await contractService.joinRoom(gameId, form.bet as number);
-    socket.emit<IJoinRoom>(SocketEventNames.joinRoom, {
-      publicKey: getPublicKeyForSockets(),
-      roomId: roomId,
-      signature,
-    });
+    setTimeout(() => {
+      socket.emit<IJoinRoom>(SocketEventNames.joinRoom, {
+        publicKey: getPublicKeyForSockets(),
+        roomId: roomId,
+        signature,
+      });
+    }, 3000);
   };
 
   const {

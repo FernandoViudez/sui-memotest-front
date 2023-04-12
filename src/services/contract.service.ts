@@ -29,7 +29,10 @@ export class MemotestContract {
         showEffects: true,
       },
     });
-    return (res?.effects?.created as any)[0].reference.objectId as string;
+    const gameBoard = res?.effects?.created?.find(
+      (el) => (el.owner as any)["Shared"]
+    );
+    return gameBoard?.reference.objectId as string;
   }
 
   async joinRoom(gameBoard: string, balanceToBet: number) {
@@ -42,9 +45,6 @@ export class MemotestContract {
     tx.setGasBudget(9000000);
     const res = await this.wallet.signAndExecuteTransactionBlock({
       transactionBlock: tx as any,
-      options: {
-        showEffects: true,
-      },
     });
     console.log("[Join]", res?.effects?.status);
   }
