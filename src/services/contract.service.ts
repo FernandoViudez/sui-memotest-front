@@ -5,48 +5,42 @@ import { environment } from "../environment/enviornment";
 export class MemotestContract {
   constructor(private readonly wallet: WalletContextState) {}
 
-  // TODO: Add split coin tx to the same tx block for other txns
   private async splitCoin(requiredBalance: number) {
     const tx = new TransactionBlock();
     const [coin] = tx.splitCoins(tx.gas, [tx.pure(requiredBalance)]);
-    tx.transferObjects([coin], tx.pure(this.wallet.address));
-    const result = await this.wallet.signAndExecuteTransactionBlock({
-      transactionBlock: tx,
-      options: {
-        showEffects: true,
-      },
-    });
-    return (result.effects?.created as any)[0].reference.objectId as string;
+    return {
+      tx,
+      coin,
+    };
   }
 
-  async createGame(balanceToBet: number) {
-    const coinForBet = await this.splitCoin(balanceToBet);
-    const tx = new TransactionBlock();
+  async createGame(balanceToBet: number): Promise<string> {
+    const { tx, coin } = await this.splitCoin(balanceToBet);
     tx.moveCall({
       target: `${environment.memotest.package}::memotest::new_game`,
-      arguments: [tx.pure(environment.memotest.config), tx.pure(coinForBet)],
+      arguments: [tx.pure(environment.memotest.config), coin],
     });
+    tx.transferObjects([coin], tx.pure(this.wallet.address));
     // TODO: research how to assign dynamic gas budget
-    tx.setGasBudget(1000000);
+    tx.setGasBudget(9000000);
     const res = await this.wallet.signAndExecuteTransactionBlock({
-      transactionBlock: tx,
+      transactionBlock: tx as any,
       options: {
         showEffects: true,
       },
     });
-    return (res?.effects?.created as any)[0].reference.objectId;
+    return (res?.effects?.created as any)[0].reference.objectId as string;
   }
 
   async joinRoom(gameBoard: string, balanceToBet: number) {
-    const coinForBet = await this.splitCoin(balanceToBet);
-    const tx = new TransactionBlock();
+    const { coin, tx } = await this.splitCoin(balanceToBet);
     tx.moveCall({
       target: `${environment.memotest.package}::memotest::join`,
-      arguments: [tx.pure(gameBoard), tx.pure(coinForBet)],
+      arguments: [tx.pure(gameBoard), coin],
     });
     tx.setGasBudget(10000);
     const res = await this.wallet.signAndExecuteTransactionBlock({
-      transactionBlock: tx,
+      transactionBlock: tx as any,
       options: {
         showEffects: true,
       },
@@ -62,7 +56,7 @@ export class MemotestContract {
     });
     tx.setGasBudget(10000);
     const res = await this.wallet.signAndExecuteTransactionBlock({
-      transactionBlock: tx,
+      transactionBlock: tx as any,
       options: {
         showEffects: true,
       },
@@ -82,7 +76,7 @@ export class MemotestContract {
     });
     tx.setGasBudget(10000);
     const res = await this.wallet.signAndExecuteTransactionBlock({
-      transactionBlock: tx,
+      transactionBlock: tx as any,
       options: {
         showEffects: true,
       },

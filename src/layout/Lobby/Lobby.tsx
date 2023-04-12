@@ -35,9 +35,7 @@ export const Lobby = () => {
         </button>
       )}
 
-      {roomStatus === "unset" && (
-        <RoomSelection onRoomSelection={setOption} />
-      )}
+      {roomStatus === "unset" && <RoomSelection onRoomSelection={setOption} />}
 
       {/* TODO: create rooms list */}
 
