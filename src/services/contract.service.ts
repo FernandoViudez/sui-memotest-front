@@ -22,7 +22,7 @@ export class MemotestContract {
     });
     tx.transferObjects([coin], tx.pure(this.wallet.address));
     // TODO: research how to assign dynamic gas budget
-    tx.setGasBudget(815373388);
+    tx.setGasBudget(9000000);
     const res = await this.wallet.signAndExecuteTransactionBlock({
       transactionBlock: tx as any,
       options: {

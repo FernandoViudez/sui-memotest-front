@@ -34,7 +34,7 @@ export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
     (state: RootState) => state.wallet
   );
 
-  const { emit, listen, clientId } = useSocket();
+  const socket = useSocket();
   const contractService = useContract();
   const { getObjectById, getPublicKeyForSockets, getSignatureForSockets } =
     useProvider();
@@ -43,17 +43,16 @@ export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
     getObjectById<IGameConfig>(environment.memotest.config).then((res) =>
       setMinBetAmount(res.minimum_bet_amount)
     );
-    listen(SocketEventNames.onError, handleErrors);
-    listen(SocketEventNames.onRoomCreated, handleRoomCreation);
+    socket.listen(SocketEventNames.onError, handleErrors);
+    socket.listen(SocketEventNames.onRoomCreated, handleRoomCreation);
+
+    return () => {
+      socket.off(SocketEventNames.onError, handleErrors);
+      socket.off(SocketEventNames.onRoomCreated, handleRoomCreation);
+    };
   }, []);
 
-  const {
-    register,
-    formState: { errors, isSubmitting },
-    handleSubmit,
-  } = useForm<ICreateRoomForm>();
-
-  const handleRoomCreation = (data: IRoomCreated) => {
+  function handleRoomCreation(data: IRoomCreated) {
     dispatch(
       createGameRoom(
         {
@@ -72,14 +71,20 @@ export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
     );
 
     onCreateRoom();
-  };
+  }
 
-  const handleErrors = (error: SocketError) => {
+  function handleErrors(error: SocketError) {
     alert(JSON.stringify(error));
-  };
+  }
+
+  const {
+    register,
+    formState: { errors, isSubmitting },
+    handleSubmit,
+  } = useForm<ICreateRoomForm>();
 
   const onSubmit: SubmitHandler<ICreateRoomForm> = async ({ bet }) => {
-    const signature = await getSignatureForSockets(clientId);
+    const signature = await getSignatureForSockets(socket.clientId);
     try {
       if (gameBoardObjectId == "") {
         const gameBoardObjectId = await contractService.createGame(
@@ -91,7 +96,7 @@ export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
       setGameBoard("");
       return alert(error);
     }
-    emit<ICreateRoom>(SocketEventNames.createRoom, {
+    socket.emit<ICreateRoom>(SocketEventNames.createRoom, {
       gameBoardObjectId: gameBoardObjectId as string,
       publicKey: getPublicKeyForSockets(),
       signature,
