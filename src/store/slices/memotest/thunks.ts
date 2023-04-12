@@ -15,8 +15,7 @@ export const enterGameRoom = (
 
     const room = rooms.filter((r) => r.id === roomId)?.pop();
 
-    if (!room)
-      throw new Error("Room does not exists or it is not available");
+    if (!room) throw new Error("Room does not exists or it is not available");
 
     dispatch(
       GameReducer.enterRoom({
@@ -29,7 +28,7 @@ export const enterGameRoom = (
 };
 
 export const createGameRoom = (
-  roomDTO: { isPrivate: boolean; name: string; type: "memotest" },
+  roomDTO: { isPrivate: boolean; name: string; type: "memotest"; id: string },
   userOwnerDTO: { walletAddress: string; name?: string }
 ): ThunkAction<void, RootState, unknown, AnyAction> => {
   return (dispatch, getState) => {
@@ -39,7 +38,6 @@ export const createGameRoom = (
       roomStatus: "pending",
       players: [],
       isAvailable: true,
-      id: Date.now() * Math.random() * 10 + "",
     };
     dispatch(GameReducer.addRoom(newRoom));
     dispatch(

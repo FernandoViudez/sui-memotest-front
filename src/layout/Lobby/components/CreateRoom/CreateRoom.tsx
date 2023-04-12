@@ -43,6 +43,7 @@ export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
     getObjectById<IGameConfig>(environment.memotest.config).then((res) =>
       setMinBetAmount(res.minimum_bet_amount)
     );
+
     socket.listen(SocketEventNames.onError, handleErrors);
     socket.listen(SocketEventNames.onRoomCreated, handleRoomCreation);
 
@@ -50,7 +51,7 @@ export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
       socket.off(SocketEventNames.onError, handleErrors);
       socket.off(SocketEventNames.onRoomCreated, handleRoomCreation);
     };
-  }, []);
+  }, [gameBoardObjectId]);
 
   function handleRoomCreation(data: IRoomCreated) {
     dispatch(
@@ -59,6 +60,7 @@ export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
           isPrivate: true,
           name: data.roomId,
           type: "memotest",
+          id: data.roomId + ":" + gameBoardObjectId,
         },
         {
           walletAddress:
@@ -85,19 +87,18 @@ export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
 
   const onSubmit: SubmitHandler<ICreateRoomForm> = async ({ bet }) => {
     const signature = await getSignatureForSockets(socket.clientId);
+    let tmpGameBoardObjectId;
     try {
       if (gameBoardObjectId == "") {
-        const gameBoardObjectId = await contractService.createGame(
-          bet as number
-        );
-        setGameBoard(gameBoardObjectId);
+        tmpGameBoardObjectId = await contractService.createGame(bet as number);
+        setGameBoard(tmpGameBoardObjectId);
       }
     } catch (error) {
       setGameBoard("");
       return alert(error);
     }
     socket.emit<ICreateRoom>(SocketEventNames.createRoom, {
-      gameBoardObjectId: gameBoardObjectId as string,
+      gameBoardObjectId: tmpGameBoardObjectId as string,
       publicKey: getPublicKeyForSockets(),
       signature,
     });
