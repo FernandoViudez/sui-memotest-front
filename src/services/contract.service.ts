@@ -38,7 +38,8 @@ export class MemotestContract {
       target: `${environment.memotest.package}::memotest::join`,
       arguments: [tx.pure(gameBoard), coin],
     });
-    tx.setGasBudget(10000);
+    tx.transferObjects([coin], tx.pure(this.wallet.address));
+    tx.setGasBudget(9000000);
     const res = await this.wallet.signAndExecuteTransactionBlock({
       transactionBlock: tx as any,
       options: {
