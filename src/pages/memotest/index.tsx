@@ -4,15 +4,17 @@ import { Lobby } from "@/layout/Lobby";
 import { AppDispatch, RootState } from "@/store";
 import { changeGameState } from "@/store/slices/memotest";
 import Head from "next/head";
-import { useDispatch, useSelector } from "react-redux";
-import styles from "./Memotest.module.css";
 import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { useSocket } from "../../hooks/memotest";
 import { SocketError } from "../../interfaces/socket-error.interface";
 import { SocketEventNames } from "../../types/memotest/socket-event-names.enum";
+import styles from "./Memotest.module.css";
 
 export default function Memotest() {
-  const { game } = useSelector((state: RootState) => state.memotest);
+  const { gameReady } = useSelector(
+    (state: RootState) => state.memotest
+  );
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useProtectRoutes("/memotest", () => {
     dispatch(changeGameState());
@@ -22,7 +24,7 @@ export default function Memotest() {
 
   useEffect(() => {
     socket.listen(SocketEventNames.onError, handleError);
-  }, []);
+  });
 
   function handleError(error: SocketError) {
     alert(JSON.stringify(error));
@@ -35,7 +37,7 @@ export default function Memotest() {
           <title>Memotest</title>
         </Head>
         <div className={`container p-3 ${styles.mainContainer}`}>
-          {game.ready ? <MemotestView /> : <Lobby />}
+          {gameReady ? <MemotestView /> : <Lobby />}
         </div>
       </>
     )

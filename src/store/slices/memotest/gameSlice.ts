@@ -58,6 +58,9 @@ export const gameSlice = createSlice({
     playersReady: (state) => {
       if (state.room) state.room.roomStatus = "ready-to-play";
     },
+    changeGameState: (state) => {
+      state.gameReady = !state.gameReady;
+    },
     exitRoom: (state) => {
       state.room = null;
     },
@@ -69,6 +72,7 @@ export const gameSlice = createSlice({
 });
 
 export const {
+  changeGameState,
   enterRoom,
   addPlayer,
   createRoom,
