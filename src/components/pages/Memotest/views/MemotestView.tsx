@@ -9,7 +9,7 @@ const initMemotestTable: ICard[] = new Array(16).fill(0).map(
   (v, index) =>
     ({
       id: "null",
-      image: null,
+      image: "",
       position: index,
       revealed: false,
     } as ICard)

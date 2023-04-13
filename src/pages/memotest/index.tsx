@@ -37,7 +37,7 @@ export default function Memotest() {
           <title>Memotest</title>
         </Head>
         <div className={`container p-3 ${styles.mainContainer}`}>
-          {gameReady ? <MemotestView /> : <Lobby />}
+          {true ? <MemotestView /> : <Lobby />}
         </div>
       </>
     )

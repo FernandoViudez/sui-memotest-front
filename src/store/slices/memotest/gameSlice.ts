@@ -13,13 +13,7 @@ const _name = "memotest";
 
 const _initialState: MemotestSlice = {
   room: null,
-  players: [
-    {
-      walletAddress: "123123123",
-      isCurrentPlayer: false,
-      icon: "",
-    },
-  ],
+  players: [],
   gameReady: false,
 };
 

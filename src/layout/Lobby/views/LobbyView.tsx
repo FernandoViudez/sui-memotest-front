@@ -1,4 +1,3 @@
-import { IPlayer } from "@/interfaces/Player";
 import { AppDispatch, RootState } from "@/store";
 import { changeGameState } from "@/store/slices/memotest";
 import { useDispatch, useSelector } from "react-redux";
@@ -6,10 +5,9 @@ import styles from "./LobbyView.module.css";
 
 export const LobbyView = () => {
   const {
-    memotest: { currentRoom },
+    memotest: { room, players },
   } = useSelector((state: RootState) => state);
   const dispatch = useDispatch<AppDispatch>();
-  const players = currentRoom?.players as IPlayer[];
 
   return (
     <article className="h-100 d-flex justify-content-center align-items-center">
@@ -17,8 +15,12 @@ export const LobbyView = () => {
         className={`d-flex flex-column justify-content-between m-auto bgGlass w-75 p-2 ${styles.mh50vh}`}
       >
         <div>
-          <p className="h4 text-center text-light m-0">Room code to share</p>
-          <p className="text-center text-white m-0 mt-3">{currentRoom?.id}</p>
+          <p className="h4 text-center text-light m-0">
+            Room code to share
+          </p>
+          <p className="text-center text-white m-0 mt-3">
+            {room?.id}
+          </p>
         </div>
         <div>
           <p className="h4 text-center text-light m-0">Players</p>
