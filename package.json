@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@mysten/sui.js": "^0.31.0",
+    "@mysten/sui.js": "^0.32.1",
     "@randlabs/myalgo-connect": "^1.4.2",
     "@reduxjs/toolkit": "^1.9.3",
     "@suiet/wallet-kit": "^0.2.4",

@@ -17,7 +17,7 @@ export const RoomSelection = ({
         </button>
         <button
           onClick={() => onRoomSelection("join-room")}
-          className="btn btn-info"
+          className="btn btn-warning"
         >
           Join Room
         </button>

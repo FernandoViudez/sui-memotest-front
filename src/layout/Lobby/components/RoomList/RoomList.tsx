@@ -38,12 +38,10 @@ export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
       setMinimumBetAmount(config.minimum_bet_amount);
     });
     socket.listen(SocketEventNames.onPlayerJoined, onPlayerJoined);
-    socket.listen(SocketEventNames.onError, handleError);
-  });
-
-  function handleError(data: SocketError) {
-    console.log("[handleError] ~> ", data);
-  }
+    return () => {
+      socket.off(SocketEventNames.onPlayerJoined, onPlayerJoined);
+    };
+  }, []);
 
   function onPlayerJoined(data: IPlayerJoined) {
     console.log("Player joined ~> ", data.id);
@@ -57,13 +55,11 @@ export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
     const [roomId, gameId] = form.roomCode.split(":");
     const signature = await getSignatureForSockets(socket.clientId);
     await contractService.joinRoom(gameId, form.bet as number);
-    setTimeout(() => {
-      socket.emit<IJoinRoom>(SocketEventNames.joinRoom, {
-        publicKey: getPublicKeyForSockets(),
-        roomId: roomId,
-        signature,
-      });
-    }, 3000);
+    socket.emit<IJoinRoom>(SocketEventNames.joinRoom, {
+      publicKey: getPublicKeyForSockets(),
+      roomId: roomId,
+      signature,
+    });
   };
 
   const {
@@ -103,8 +99,8 @@ export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
         </div>
         <input
           disabled={isSubmitting}
-          value="Create Room"
-          className="btn w-50 m-auto btn-primary"
+          value="Join Room"
+          className="btn w-50 m-auto btn-warning"
           type="submit"
         />
       </form>
