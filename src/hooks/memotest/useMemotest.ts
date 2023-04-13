@@ -3,29 +3,17 @@ import { IGameRoom } from "@/interfaces/GameRoom";
 import { IPlayer } from "@/interfaces/Player";
 import { ITurn } from "@/interfaces/Turn";
 import { RootState } from "@/store";
-import {
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useEffect,
-  useState,
-} from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
-export const useMemotestInitValues = () => {
-  const initMemotestTable = () => <ICard[]>new Array(16).fill(0).map(
-      (v, index) =>
-        ({
-          id: "null",
-          image: null,
-          position: index,
-          revealed: false,
-        } as ICard)
-    );
+const _fakeIds = [
+  1018844906736, 540746393400, 416561540968, 747315715134,
+  1015200748329, 346520388994, 1180316005379, 82295636262,
+];
 
-  const [cardsRevealed, setCardsRevealed] = useState<ICard[]>(
-    initMemotestTable()
-  );
+export const useMemotest = (memotestTable: ICard[]) => {
+  const [cardsRevealed, setCardsRevealed] =
+    useState<ICard[]>(memotestTable);
 
   const [turn, setTurn] = useState<ITurn>({
     status: "started",
@@ -37,65 +25,38 @@ export const useMemotestInitValues = () => {
     (state: RootState) => state.memotest
   );
 
-  const currentRoom = memotestState.currentRoom as IGameRoom;
-
   const [currentPlayer, setCurrentPlayer] = useState<IPlayer>(
-    currentRoom.players[0]
+    (memotestState.currentRoom as IGameRoom).players[0]
   );
 
   const onRevealCard = useCallback((position: number) => {
-    // TODO: Get card img & id
+    // TODO: Get card img & id and remove fakeIds arr
+
+    const cardData = {
+      id: `${
+        position < _fakeIds.length
+          ? _fakeIds[position]
+          : _fakeIds[position - _fakeIds.length]
+      }`,
+      image: null,
+      position,
+      revealed: true,
+    };
 
     setCardsRevealed((state) => {
       return state.map((c) =>
-        c.position === position
-          ? {
-              id: null,
-              image: null,
-              position,
-              revealed: true,
-            }
-          : c
+        c.position === position ? cardData : c
       );
     });
 
     setTurn(({ flippedCardsAmount, flippedCards }) => {
       return {
         flippedCardsAmount: flippedCardsAmount + 1,
-        flippedCards: [
-          ...flippedCards,
-          {
-            id: null,
-            image: null,
-            position,
-            revealed: true,
-          },
-        ],
+        flippedCards: [...flippedCards, cardData],
         status: "in-process",
       };
     });
   }, []);
-
-  return { onRevealCard };
-};
-
-export const useMemotestGameLogic = ({
-  setCardsRevealed,
-  currentRoom,
-  setTurn,
-  turn,
-}: {
-  setCardsRevealed: Dispatch<SetStateAction<ICard[]>>;
-  setTurn: Dispatch<SetStateAction<ITurn>>;
-  currentRoom: IGameRoom;
-  turn: ITurn;
-}) => {
-  const [currentPlayer, setCurrentPlayer] = useState<IPlayer>(
-    currentRoom.players[0]
-  );
-
-  const [player1, player2, player3 = null, player4 = null] =
-    currentRoom.players;
 
   const goToNextTurn = useCallback(
     () =>
@@ -107,35 +68,59 @@ export const useMemotestGameLogic = ({
     [setTurn]
   );
 
-  const comproveSwippedCards = useCallback(() => {
+  const comproveFlippedCards = useCallback(() => {
     const [card1, card2] = turn.flippedCards;
 
     if (card1.id === card2.id) {
       setCardsRevealed((state) => {
         const newState = [...state];
-        state[card1.position] = {
-          ...card1,
-          revealedByPlayer: currentPlayer.walletAddress,
-        };
-        state[card2.position] = {
-          ...card2,
-          revealedByPlayer: currentPlayer.walletAddress,
-        };
+        newState[card1.position].revealedByPlayer =
+          card1.revealedByPlayer;
+        newState[card2.position].revealedByPlayer =
+          card2.revealedByPlayer;
         return newState;
       });
+    } else {
+      setTimeout(() => {
+        setCardsRevealed((state) => {
+          const newState = [...state];
+          newState[card1.position].revealed = false;
+          newState[card2.position].revealed = false;
+          return newState;
+        });
+      }, 2000);
     }
-  }, [currentPlayer.walletAddress, setCardsRevealed, turn]);
+  }, [setCardsRevealed, turn]);
 
+  // Game logic
   useEffect(() => {
     if (turn.flippedCardsAmount < 2) return;
 
-    comproveSwippedCards();
+    comproveFlippedCards();
 
     goToNextTurn();
-  }, [
-    currentPlayer.walletAddress,
-    comproveSwippedCards,
-    goToNextTurn,
+  }, [comproveFlippedCards, goToNextTurn, turn]);
+
+  // Change player turn
+  useEffect(() => {
+    if (turn.status !== "finished") return;
+
+    setCurrentPlayer((player) => {
+      const players = (memotestState.currentRoom as IGameRoom)
+        .players;
+      const playerIdx = players.indexOf(player);
+      if (playerIdx < players.length - 1)
+        return players[playerIdx + 1];
+      else if (playerIdx === players.length - 1) return players[0];
+      else return player;
+    });
+  }, [turn.status, memotestState.currentRoom]);
+
+  return {
     turn,
-  ]);
+    onRevealCard,
+    cardsRevealed,
+    currentPlayer,
+    players: (memotestState.currentRoom as IGameRoom).players,
+  };
 };

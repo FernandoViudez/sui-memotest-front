@@ -6,54 +6,53 @@ import styles from "./MemotestCard.module.css";
 
 interface ComponentProps {
   position: number;
-  revealedInTurn: boolean;
+  isFlipped: boolean;
+  isDiscovered: boolean;
   cannotBeFlipped: boolean;
   onRevealCard: (position: number) => void;
 }
 
 const MemotestCardComponent = ({
   position,
+  isFlipped,
+  isDiscovered,
   onRevealCard,
-  revealedInTurn,
   cannotBeFlipped,
 }: ComponentProps) => {
   const onClickCard = () => {
-    if (revealedInTurn || cannotBeFlipped) return;
+    if (isFlipped || cannotBeFlipped) return;
     onRevealCard(position);
   };
 
   const setFlipAnimationClass = useMemo(
     () =>
       `${
-        revealedInTurn
+        isFlipped
           ? styles.flipAnimContainer + " " + styles.reveal
           : styles.flipAnimContainer
       }`,
-    [revealedInTurn]
+    [isFlipped]
   );
 
   const setDisableCursorClass = useMemo(
     () =>
       `${styles.memotestCard} ${
-        revealedInTurn || cannotBeFlipped ? styles.disableCursor : ""
+        isFlipped || cannotBeFlipped || isDiscovered
+          ? styles.disableCursor
+          : ""
       }`,
-    [revealedInTurn, cannotBeFlipped]
+    [isFlipped, isDiscovered, cannotBeFlipped]
   );
 
   return (
     <div className={setDisableCursorClass} onClick={onClickCard}>
       <div className={setFlipAnimationClass}>
         <div className={styles.faceDown}>
-          <Image
-            className={revealedInTurn ? styles.revealedCard : ""}
-            src={trantorianImg}
-            fill
-            alt="front"
-          />
+          <Image src={trantorianImg} fill alt="front" />
         </div>
         <div className={styles.cardBack}>
           <Image
-            className={revealedInTurn ? styles.revealedCard : ""}
+            className={isDiscovered ? styles.revealedCard : ""}
             src={placeholder}
             fill
             alt="back"
