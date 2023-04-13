@@ -4,40 +4,63 @@ import { useDispatch, useSelector } from "react-redux";
 import { createGameRoom } from "@/store/slices/memotest";
 import { SubmitHandler, useForm } from "react-hook-form";
 import styles from "./CreateRoom.module.css";
+import {
+  useContract,
+  useProvider,
+  useSocket,
+} from "../../../../hooks/memotest";
+import { useEffect, useState } from "react";
+import { SocketEventNames } from "../../../../types/memotest/socket-event-names.enum";
+import {
+  ICreateRoom,
+  IRoomCreated,
+} from "../../../../interfaces/memotest/room.interface";
+import { environment } from "../../../../environment/enviornment";
+import { IGameConfig } from "../../../../interfaces/memotest/game-config.interface";
+import { SocketError } from "../../../../interfaces/socket-error.interface";
 
 interface ICreateRoomForm {
   name: string;
   isPrivate?: boolean;
-  password?: string;
+  bet?: number;
 }
 
-export const CreateRoom = ({
-  onCreateRoom,
-}: {
-  onCreateRoom: () => void;
-}) => {
+export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const [minimumBetAmount, setMinBetAmount] = useState(0);
+  const [gameBoardObjectId, setGameBoard] = useState("");
 
   const { walletAddress, name } = useSelector(
     (state: RootState) => state.wallet
   );
 
-  const {
-    register,
-    formState: { errors, isSubmitting },
-    handleSubmit,
-  } = useForm<ICreateRoomForm>();
+  const socket = useSocket();
+  const contractService = useContract();
+  const { getObjectById, getPublicKeyForSockets, getSignatureForSockets } =
+    useProvider();
 
-  const onSubmit: SubmitHandler<ICreateRoomForm> = ({
-    name,
-    password,
-  }) => {
+  useEffect(() => {
+    getObjectById<IGameConfig>(environment.memotest.config).then((res) =>
+      setMinBetAmount(res.minimum_bet_amount)
+    );
+
+    socket.listen(SocketEventNames.onError, handleErrors);
+    socket.listen(SocketEventNames.onRoomCreated, handleRoomCreation);
+
+    return () => {
+      socket.off(SocketEventNames.onError, handleErrors);
+      socket.off(SocketEventNames.onRoomCreated, handleRoomCreation);
+    };
+  }, [gameBoardObjectId]);
+
+  function handleRoomCreation(data: IRoomCreated) {
     dispatch(
       createGameRoom(
         {
-          isPrivate: !!password?.length,
-          name,
+          isPrivate: true,
+          name: data.roomId,
           type: "memotest",
+          id: data.roomId + ":" + gameBoardObjectId,
         },
         {
           walletAddress:
@@ -50,6 +73,35 @@ export const CreateRoom = ({
     );
 
     onCreateRoom();
+  }
+
+  function handleErrors(error: SocketError) {
+    alert(JSON.stringify(error));
+  }
+
+  const {
+    register,
+    formState: { errors, isSubmitting },
+    handleSubmit,
+  } = useForm<ICreateRoomForm>();
+
+  const onSubmit: SubmitHandler<ICreateRoomForm> = async ({ bet }) => {
+    const signature = await getSignatureForSockets(socket.clientId);
+    let tmpGameBoardObjectId;
+    try {
+      if (gameBoardObjectId == "") {
+        tmpGameBoardObjectId = await contractService.createGame(bet as number);
+        setGameBoard(tmpGameBoardObjectId);
+      }
+    } catch (error) {
+      setGameBoard("");
+      return alert(error);
+    }
+    socket.emit<ICreateRoom>(SocketEventNames.createRoom, {
+      gameBoardObjectId: tmpGameBoardObjectId as string,
+      publicKey: getPublicKeyForSockets(),
+      signature,
+    });
   };
 
   return (
@@ -59,29 +111,15 @@ export const CreateRoom = ({
         className={`form text-white d-flex flex-column p-4 w-75 m-auto bgGlass`}
       >
         <div className="mb-5">
-          <label className="form-label">Room Name</label>
+          <label className="form-label">Amount to bet</label>
           <input
-            placeholder="Room name"
+            placeholder="Amount to bet in SUI token"
             className={`form-control ${styles.inputStyles}`}
-            type="text"
-            {...register("name", { required: true, minLength: 3 })}
+            type="number"
+            {...register("bet", { min: minimumBetAmount, required: true })}
           />
           <small className="form-text text-warning">
-            {errors?.name &&
-              "The required min length is 3 characters"}
-          </small>
-        </div>
-        <div className="mb-5">
-          <label className="form-label">Room Password</label>
-          <input
-            placeholder="Room password"
-            className={`form-control ${styles.inputStyles}`}
-            type="text"
-            {...register("password", { minLength: 3 })}
-          />
-          <small className="form-text text-warning">
-            {errors?.password &&
-              "The required min length is 3 characters"}
+            {errors?.bet && `The min value is ${minimumBetAmount}`}
           </small>
         </div>
         <input

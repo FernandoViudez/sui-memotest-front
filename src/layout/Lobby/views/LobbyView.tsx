@@ -17,6 +17,10 @@ export const LobbyView = () => {
         className={`d-flex flex-column justify-content-between m-auto bgGlass w-75 p-2 ${styles.mh50vh}`}
       >
         <div>
+          <p className="h4 text-center text-light m-0">Room code to share</p>
+          <p className="text-center text-white m-0 mt-3">{currentRoom?.id}</p>
+        </div>
+        <div>
           <p className="h4 text-center text-light m-0">Players</p>
           <hr className="text-light mx-auto mt-0 w-50" />
         </div>

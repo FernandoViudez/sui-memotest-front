@@ -35,15 +35,11 @@ export const Lobby = () => {
         </button>
       )}
 
-      {roomStatus === "unset" && (
-        <RoomSelection onRoomSelection={setOption} />
-      )}
+      {roomStatus === "unset" && <RoomSelection onRoomSelection={setOption} />}
 
       {/* TODO: create rooms list */}
 
-      {roomStatus === "join-room" && (
-        <RoomList onSelectRoom={onSetLobbyReady} />
-      )}
+      {roomStatus === "join-room" && <RoomList onJoinRoom={onSetLobbyReady} />}
 
       {/* TODO: create room form */}
 
