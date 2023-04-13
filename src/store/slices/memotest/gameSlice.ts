@@ -15,17 +15,17 @@ const _name = "memotest";
 const _initialState: MemotestSlice = {
   rooms: [
     {
+      //TODO Remove when development is done
       id: "1",
       isAvailable: true,
       isPrivate: false,
       name: "Test Room",
       owner:
         "0x4a95d662730997901b91aaf6c79ddea8c711a55b7770eff0bd5a909ecf749098",
-      //TODO Remove for PROD
       players: [
         {
           walletAddress:
-            "0x4a95d662730997901b91aaf6c79ddea8c711a55b7770eff0bd5a909ecf749098",
+            "0x4a95d662730997901b91aaf6c79ddea8c711a55b7770eff0bd5a908",
           name: "John Doe",
         },
       ],

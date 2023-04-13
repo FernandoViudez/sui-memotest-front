@@ -1,33 +1,66 @@
 import Image from "next/image";
-import { useState } from "react";
+import { memo, useMemo } from "react";
 import placeholder from "../../../../../public/placeholder.png";
 import trantorianImg from "../../../../../public/tt-memo-card.png";
 import styles from "./MemotestCard.module.css";
 
-const _trantorianImg = "";
+interface ComponentProps {
+  position: number;
+  isFlipped: boolean;
+  isDiscovered: boolean;
+  cannotBeFlipped: boolean;
+  onRevealCard: (position: number) => void;
+}
 
-export const MemotestCard = (props: { imgBack: string }) => {
-  const [reveal, setReveal] = useState(false);
+const MemotestCardComponent = ({
+  position,
+  isFlipped,
+  isDiscovered,
+  onRevealCard,
+  cannotBeFlipped,
+}: ComponentProps) => {
+  const onClickCard = () => {
+    if (isFlipped || cannotBeFlipped) return;
+    onRevealCard(position);
+  };
+
+  const setFlipAnimationClass = useMemo(
+    () =>
+      `${
+        isFlipped
+          ? styles.flipAnimContainer + " " + styles.reveal
+          : styles.flipAnimContainer
+      }`,
+    [isFlipped]
+  );
+
+  const setDisableCursorClass = useMemo(
+    () =>
+      `${styles.memotestCard} ${
+        isFlipped || cannotBeFlipped || isDiscovered
+          ? styles.disableCursor
+          : ""
+      }`,
+    [isFlipped, isDiscovered, cannotBeFlipped]
+  );
 
   return (
-    <div
-      className={`${styles.memotestCard}`}
-      onClick={() => setReveal((state) => !state)}
-    >
-      <div
-        className={`${
-          reveal
-            ? styles.flipAnimContainer + " " + styles.reveal
-            : styles.flipAnimContainer
-        }  `}
-      >
+    <div className={setDisableCursorClass} onClick={onClickCard}>
+      <div className={setFlipAnimationClass}>
         <div className={styles.faceDown}>
           <Image src={trantorianImg} fill alt="front" />
         </div>
         <div className={styles.cardBack}>
-          <Image src={placeholder} fill alt="back" />
+          <Image
+            className={isDiscovered ? styles.revealedCard : ""}
+            src={placeholder}
+            fill
+            alt="back"
+          />
         </div>
       </div>
     </div>
   );
 };
+
+export const MemotestCard = memo(MemotestCardComponent);
