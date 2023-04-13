@@ -1,94 +1,69 @@
 import { IGameRoom } from "@/interfaces/GameRoom";
-import { IPlayer } from "@/interfaces/Player";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { IPlayer } from "./../../../interfaces/Player";
 
 type MemotestSlice = {
-  rooms: IGameRoom[];
-  currentRoom?: IGameRoom;
-  game: {
-    ready: boolean;
-  };
+  room: IGameRoom | null;
+  players: IPlayer[];
+  gameReady: boolean;
+  status?: string;
 };
 
 const _name = "memotest";
 
 const _initialState: MemotestSlice = {
-  rooms: [
+  room: null,
+  players: [
     {
-      //TODO Remove when development is done
-      id: "1",
-      isAvailable: true,
-      isPrivate: false,
-      name: "Test Room",
-      owner:
-        "0x4a95d662730997901b91aaf6c79ddea8c711a55b7770eff0bd5a909ecf749098",
-      players: [
-        {
-          walletAddress:
-            "0x4a95d662730997901b91aaf6c79ddea8c711a55b7770eff0bd5a908",
-          name: "John Doe",
-        },
-      ],
-      roomStatus: "pending",
-      type: "memotest",
+      walletAddress: "123123123",
+      isCurrentPlayer: false,
+      icon: "",
     },
   ],
-  game: {
-    ready: false,
-  },
+  gameReady: false,
 };
 
 export const gameSlice = createSlice({
   name: _name,
   initialState: _initialState,
   reducers: {
-    addRoom: (state, action: PayloadAction<IGameRoom>) => {
-      state.rooms.push({ ...action.payload });
-    },
     enterRoom: (
       state,
       {
         payload,
       }: PayloadAction<{
-        currentRoom: IGameRoom;
+        room: IGameRoom;
         newPlayer: IPlayer;
         isOwner: boolean;
       }>
     ) => {
-      state.currentRoom = payload.currentRoom;
-      state.currentRoom = {
-        ...state.currentRoom,
-        players: [...state.currentRoom.players, payload.newPlayer],
-      };
+      state.room = payload.room;
+      state.players.push(payload.newPlayer);
       if (payload.isOwner)
-        state.currentRoom.owner = payload.newPlayer.walletAddress;
+        state.room.owner = payload.newPlayer.walletAddress;
+    },
+    createRoom: (
+      state,
+      {
+        payload,
+      }: PayloadAction<{
+        room: IGameRoom;
+      }>
+    ) => {
+      state.room = payload.room;
     },
     addPlayer: (state, action: PayloadAction<IPlayer>) => {
-      state.currentRoom?.players.push(action.payload);
+      state.players.push(action.payload);
     },
     playersReady: (state) => {
-      if (state.currentRoom)
-        state.currentRoom.roomStatus = "ready-to-play";
-    },
-    changeGameState: (state) => {
-      return {
-        ...state,
-        game: {
-          ready: !state.game.ready,
-        },
-      };
-    },
-    cancelGame: (state) => {
-      if (state.currentRoom) state.currentRoom.roomStatus = "pending";
+      if (state.room) state.room.roomStatus = "ready-to-play";
     },
     exitRoom: (state) => {
-      state.currentRoom = undefined;
+      state.room = null;
     },
-    deleteRoom: (state, action: PayloadAction<string>) => {
-      return {
-        ...state,
-        rooms: state.rooms.filter((r) => r.id === action.payload),
-      };
+    setFirstPlayer: (state) => {
+      // TODO set first player randomly
+      state.players[0].isCurrentPlayer = true;
     },
   },
 });
@@ -96,9 +71,7 @@ export const gameSlice = createSlice({
 export const {
   enterRoom,
   addPlayer,
-  addRoom,
-  changeGameState,
+  createRoom,
   playersReady,
-  cancelGame,
   exitRoom,
 } = gameSlice.actions;

@@ -5,45 +5,75 @@ import { AnyAction, ThunkAction } from "@reduxjs/toolkit";
 import * as GameReducer from "../memotest";
 
 export const enterGameRoom = (
-  roomId: string,
+  roomCode: string,
   player: IPlayer
 ): ThunkAction<void, RootState, unknown, AnyAction> => {
   return (dispatch, getState) => {
     const {
-      memotest: { rooms },
+      memotest: { room },
+      wallet: { walletAddress },
     } = getState();
 
-    const room = rooms.filter((r) => r.id === roomId)?.pop();
+    // Destructure room code
+    const objectId = roomCode.split(":");
+    // call contract provider
+    const resp = <IGameRoom>{
+      id: "",
+      isAvailable: false,
+      isPrivate: true,
+      owner: "",
+      roomCode: "",
+      roomStatus: "pending",
+      type: "memotest",
+    };
+    // send sockket msg with the new player
+    // enter room state
 
-    if (!room) throw new Error("Room does not exists or it is not available");
+    if (!room)
+      throw new Error("Room does not exists or it is not available");
 
     dispatch(
       GameReducer.enterRoom({
         newPlayer: player,
-        currentRoom: room,
-        isOwner: false,
+        isOwner: walletAddress === room.owner,
+        room: resp,
       })
     );
   };
 };
 
 export const createGameRoom = (
-  roomDTO: { isPrivate: boolean; name: string; type: "memotest"; id: string },
-  userOwnerDTO: { walletAddress: string; name?: string }
+  roomCode: string
 ): ThunkAction<void, RootState, unknown, AnyAction> => {
   return (dispatch, getState) => {
+    const { wallet } = getState();
+
     const newRoom: IGameRoom = {
-      ...roomDTO,
-      owner: userOwnerDTO.walletAddress,
+      owner: wallet.walletAddress,
       roomStatus: "pending",
-      players: [],
       isAvailable: true,
+      roomCode,
+      isPrivate: true,
+      type: "memotest",
+      id: "", // Room Code id?
     };
-    dispatch(GameReducer.addRoom(newRoom));
+
+    // set socket msg to create room
+    // ...
+
+    // set room in state
+    dispatch(GameReducer.createRoom({ room: newRoom }));
+
+    // send sockket msg with the new player
+    // ...
+
+    // enter room state
     dispatch(
       GameReducer.enterRoom({
-        currentRoom: newRoom,
-        newPlayer: userOwnerDTO,
+        room: newRoom,
+        newPlayer: {
+          walletAddress: wallet.walletAddress,
+        },
         isOwner: true,
       })
     );
