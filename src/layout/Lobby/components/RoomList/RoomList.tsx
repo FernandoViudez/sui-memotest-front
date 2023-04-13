@@ -13,6 +13,7 @@ import { IGameConfig } from "../../../../interfaces/memotest/game-config.interfa
 import { SocketEventNames } from "../../../../types/memotest/socket-event-names.enum";
 import { IPlayerJoined } from "../../../../interfaces/memotest/player.interface";
 import { IJoinRoom } from "../../../../interfaces/memotest/room.interface";
+import { SocketError } from "../../../../interfaces/socket-error.interface";
 
 interface IJoinRoomForm {
   roomCode: string;
@@ -37,8 +38,10 @@ export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
       setMinimumBetAmount(config.minimum_bet_amount);
     });
     socket.listen(SocketEventNames.onPlayerJoined, onPlayerJoined);
-    socket.listen(SocketEventNames.onError, console.log);
-  });
+    return () => {
+      socket.off(SocketEventNames.onPlayerJoined, onPlayerJoined);
+    };
+  }, []);
 
   function onPlayerJoined(data: IPlayerJoined) {
     console.log("Player joined ~> ", data.id);
@@ -96,8 +99,8 @@ export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
         </div>
         <input
           disabled={isSubmitting}
-          value="Create Room"
-          className="btn w-50 m-auto btn-primary"
+          value="Join Room"
+          className="btn w-50 m-auto btn-warning"
           type="submit"
         />
       </form>

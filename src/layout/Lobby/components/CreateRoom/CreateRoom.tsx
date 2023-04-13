@@ -44,11 +44,9 @@ export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
       setMinBetAmount(res.minimum_bet_amount)
     );
 
-    socket.listen(SocketEventNames.onError, handleErrors);
     socket.listen(SocketEventNames.onRoomCreated, handleRoomCreation);
 
     return () => {
-      socket.off(SocketEventNames.onError, handleErrors);
       socket.off(SocketEventNames.onRoomCreated, handleRoomCreation);
     };
   }, [gameBoardObjectId]);
@@ -73,10 +71,6 @@ export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
     );
 
     onCreateRoom();
-  }
-
-  function handleErrors(error: SocketError) {
-    alert(JSON.stringify(error));
   }
 
   const {
