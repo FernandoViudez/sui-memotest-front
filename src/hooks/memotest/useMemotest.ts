@@ -75,9 +75,9 @@ export const useMemotest = (memotestTable: ICard[]) => {
       setCardsRevealed((state) => {
         const newState = [...state];
         newState[card1.position].revealedByPlayer =
-          card1.revealedByPlayer;
+          currentPlayer.walletAddress;
         newState[card2.position].revealedByPlayer =
-          card2.revealedByPlayer;
+          currentPlayer.walletAddress;
         return newState;
       });
     } else {
@@ -88,9 +88,9 @@ export const useMemotest = (memotestTable: ICard[]) => {
           newState[card2.position].revealed = false;
           return newState;
         });
-      }, 2000);
+      }, 1800);
     }
-  }, [setCardsRevealed, turn]);
+  }, [setCardsRevealed, currentPlayer, turn]);
 
   // Game logic
   useEffect(() => {
