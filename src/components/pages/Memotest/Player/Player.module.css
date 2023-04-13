@@ -1,0 +1,22 @@
+.playerCard {
+  border-radius: 100%;
+  min-height: 70px;
+  width: 70px;
+  background-color: red;
+  transition: box-shadow 500ms;
+}
+
+.currentPlayer {
+  /* For images */
+  /* display: block;
+  position: absolute;
+  z-index: -1;
+  filter: blur(16px);
+  -webkit-filter: invert(0.3);
+  -moz-filter: invert(0.3); */
+  /* Temp */
+  box-shadow: 0px 0px 5px 5px rgb(49, 146, 181);
+  -webkit-box-shadow: 0px 0px 5px 5px rgb(49, 146, 181);
+  -moz-box-shadow: 0px 0px 5px 5px rgb(49, 146, 181);
+  transition: box-shadow 1s;
+}
