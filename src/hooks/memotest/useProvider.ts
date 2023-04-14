@@ -21,7 +21,7 @@ export const useProvider = () => {
         showType: true,
       },
     });
-    return (obj.data?.content as any).fields as T;
+    return (obj.data?.content as any)?.fields as T;
   };
 
   const getMyCoins = async () => {
