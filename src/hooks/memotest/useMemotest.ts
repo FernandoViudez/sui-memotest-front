@@ -1,4 +1,5 @@
 import { ICard } from "@/interfaces/Card";
+import { IGameRoom } from "@/interfaces/GameRoom";
 import { IPlayer } from "@/interfaces/Player";
 import { ITurn } from "@/interfaces/Turn";
 import { RootState } from "@/store";
@@ -24,9 +25,14 @@ export const useMemotest = (memotestTable: ICard[]) => {
     (state: RootState) => state.memotest
   );
 
+  const room = memotestState.currentRoom as {
+    details: IGameRoom;
+    players: IPlayer[];
+  };
+
   // TODO change this to define a random player to start game
   const [currentPlayer, setCurrentPlayer] = useState<IPlayer>(
-    memotestState.players[0]
+    room.players[0]
   );
 
   const onRevealCard = useCallback((position: number) => {
@@ -106,20 +112,20 @@ export const useMemotest = (memotestTable: ICard[]) => {
     if (turn.status !== "finished") return;
 
     setCurrentPlayer((player) => {
-      const players = memotestState.players;
+      const players = room.players as IPlayer[];
       const playerIdx = players.indexOf(player);
       if (playerIdx < players.length - 1)
         return players[playerIdx + 1];
       else if (playerIdx === players.length - 1) return players[0];
       else return player;
     });
-  }, [turn.status, memotestState]);
+  }, [turn.status, room]);
 
   return {
     turn,
     onRevealCard,
     cardsRevealed,
     currentPlayer,
-    players: memotestState.players,
+    players: room.players as IPlayer[],
   };
 };

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CreateRoom } from "./components/CreateRoom/CreateRoom";
-import { RoomList } from "./components/RoomList/RoomList";
+import { JoinRoom } from "./components/JoinRoom/JoinRoom";
 import { RoomSelection } from "./components/RoomSelection";
 import { LobbyView } from "./views/LobbyView";
 
@@ -42,7 +42,7 @@ export const Lobby = () => {
       {/* TODO: create rooms list */}
 
       {roomStatus === "join-room" && (
-        <RoomList onJoinRoom={onSetLobbyReady} />
+        <JoinRoom onJoinRoom={onSetLobbyReady} />
       )}
 
       {/* TODO: create room form */}

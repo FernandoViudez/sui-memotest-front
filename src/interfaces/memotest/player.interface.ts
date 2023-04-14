@@ -1,4 +1,5 @@
 export interface IPlayerJoined {
-  id: number;
+  id: number; // position at the table
+  roomCode: number;
 }
 export interface IPlayerLeft extends IPlayerJoined {}

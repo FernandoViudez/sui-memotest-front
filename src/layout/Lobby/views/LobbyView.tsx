@@ -1,25 +1,30 @@
 import { AppDispatch, RootState } from "@/store";
-import { changeGameState } from "@/store/slices/memotest";
 import { useDispatch, useSelector } from "react-redux";
 import styles from "./LobbyView.module.css";
 
 export const LobbyView = () => {
-  const {
-    memotest: { room, players },
-  } = useSelector((state: RootState) => state);
+  const { currentRoom } = useSelector(
+    (state: RootState) => state.memotest
+  );
   const dispatch = useDispatch<AppDispatch>();
 
+  const startGame = () => {
+    console.log("startGame");
+    // dispatch();
+    // changeGameState()
+  };
   return (
     <article className="h-100 d-flex justify-content-center align-items-center">
       <div
         className={`d-flex flex-column justify-content-between m-auto bgGlass w-75 p-2 ${styles.mh50vh}`}
       >
+        {/* IN loby game code to share */}
         <div>
           <p className="h4 text-center text-light m-0">
             Room code to share
           </p>
           <p className="text-center text-white m-0 mt-3">
-            {room?.id}
+            {currentRoom?.details.id}
           </p>
         </div>
         <div>
@@ -27,7 +32,7 @@ export const LobbyView = () => {
           <hr className="text-light mx-auto mt-0 w-50" />
         </div>
         <ul className="list-group" style={{ borderRadius: 0 }}>
-          {players.map((p, index) => (
+          {currentRoom?.players.map((p, index) => (
             <li
               key={index}
               className={`list-group-item mb-1 text-white ${styles.listGroupItem}`}
@@ -44,7 +49,7 @@ export const LobbyView = () => {
           ))}
         </ul>
         <button
-          onClick={() => dispatch(changeGameState())}
+          onClick={startGame}
           className="btn btn-primary w-50 m-auto mt-3 mb-1"
         >
           Start Game
