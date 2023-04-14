@@ -1,5 +1,4 @@
 import { AppDispatch, RootState } from "@/store";
-import { enterGameRoom } from "@/store/slices/memotest";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useState, useEffect } from "react";
@@ -8,25 +7,21 @@ import {
   useProvider,
   useSocket,
 } from "../../../../hooks/memotest";
-import { environment } from "../../../../environment/enviornment";
-import { IGameConfig } from "../../../../interfaces/memotest/game-config.interface";
 import { SocketEventNames } from "../../../../types/memotest/socket-event-names.enum";
 import { IPlayerJoined } from "../../../../interfaces/memotest/player.interface";
 import { IJoinRoom } from "../../../../interfaces/memotest/room.interface";
-import { SocketError } from "../../../../interfaces/socket-error.interface";
 import { Namespace } from "../../../../types/socket-namespaces.enum";
+import { IGameBoard } from "../../../../interfaces/memotest/game-board.interface";
 
 interface IJoinRoomForm {
   roomCode: string;
   bet: number;
 }
-// TODO: Change "RoomList" to "JoinRoom"
 export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
   const {
     memotest: { rooms },
     wallet: { walletAddress, name },
   } = useSelector((state: RootState) => state);
-  const [minimumBetAmount, setMinimumBetAmount] = useState(0);
   const [roomCode, setRoomCode] = useState("");
   const dispatch = useDispatch<AppDispatch>();
   const { getObjectById, getPublicKeyForSockets, getSignatureForSockets } =
@@ -35,9 +30,6 @@ export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
   const contractService = useContract();
 
   useEffect(() => {
-    getObjectById<IGameConfig>(environment.memotest.config).then((config) => {
-      setMinimumBetAmount(config.minimum_bet_amount);
-    });
     socket.listen(SocketEventNames.onPlayerJoined, onPlayerJoined);
     return () => {
       socket.off(SocketEventNames.onPlayerJoined, onPlayerJoined);
@@ -54,8 +46,12 @@ export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
   const onSubmit: SubmitHandler<IJoinRoomForm> = async (form) => {
     setRoomCode(form.roomCode);
     const [roomId, gameId] = form.roomCode.split(":");
-    const signature = await getSignatureForSockets(socket.clientId);
-    await contractService.joinRoom(gameId, form.bet as number);
+    const board = await getObjectById<IGameBoard>(gameId);
+    const signature = await getSignatureForSockets(socket.clientId as string);
+    await contractService.joinRoom(
+      gameId,
+      board?.config?.fields?.minimum_bet_amount
+    );
     socket.emit<IJoinRoom>(SocketEventNames.joinRoom, {
       publicKey: getPublicKeyForSockets(),
       roomId: roomId,
@@ -84,18 +80,6 @@ export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
           />
           <small className="form-text text-warning">
             {errors?.roomCode && `Rome code is required.`}
-          </small>
-        </div>
-        <div className="mb-5">
-          <label className="form-label">Amount to bet</label>
-          <input
-            placeholder="Amount to bet in SUI token"
-            className={`form-control`}
-            type="number"
-            {...register("bet", { min: minimumBetAmount, required: true })}
-          />
-          <small className="form-text text-warning">
-            {errors?.bet && `The min value is ${minimumBetAmount}`}
           </small>
         </div>
         <input
