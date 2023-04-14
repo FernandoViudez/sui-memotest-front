@@ -14,6 +14,7 @@ import { SocketEventNames } from "../../../../types/memotest/socket-event-names.
 import { IPlayerJoined } from "../../../../interfaces/memotest/player.interface";
 import { IJoinRoom } from "../../../../interfaces/memotest/room.interface";
 import { SocketError } from "../../../../interfaces/socket-error.interface";
+import { Namespace } from "../../../../types/socket-namespaces.enum";
 
 interface IJoinRoomForm {
   roomCode: string;
@@ -30,7 +31,7 @@ export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { getObjectById, getPublicKeyForSockets, getSignatureForSockets } =
     useProvider();
-  const socket = useSocket();
+  const socket = useSocket(Namespace.memotest);
   const contractService = useContract();
 
   useEffect(() => {

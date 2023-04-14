@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { useSocket } from "../../hooks/memotest";
 import { SocketError } from "../../interfaces/socket-error.interface";
 import { SocketEventNames } from "../../types/memotest/socket-event-names.enum";
+import { Namespace } from "../../types/socket-namespaces.enum";
 
 export default function Memotest() {
   const { game } = useSelector((state: RootState) => state.memotest);
@@ -18,7 +19,7 @@ export default function Memotest() {
     dispatch(changeGameState());
   });
 
-  const socket = useSocket();
+  const socket = useSocket(Namespace.memotest);
 
   useEffect(() => {
     socket.listen(SocketEventNames.onError, handleError);

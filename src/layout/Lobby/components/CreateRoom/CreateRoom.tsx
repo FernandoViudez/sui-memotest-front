@@ -18,6 +18,7 @@ import {
 import { environment } from "../../../../environment/enviornment";
 import { IGameConfig } from "../../../../interfaces/memotest/game-config.interface";
 import { SocketError } from "../../../../interfaces/socket-error.interface";
+import { Namespace } from "../../../../types/socket-namespaces.enum";
 
 interface ICreateRoomForm {
   name: string;
@@ -34,7 +35,7 @@ export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
     (state: RootState) => state.wallet
   );
 
-  const socket = useSocket();
+  const socket = useSocket(Namespace.memotest);
   const contractService = useContract();
   const { getObjectById, getPublicKeyForSockets, getSignatureForSockets } =
     useProvider();
@@ -80,7 +81,7 @@ export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
   } = useForm<ICreateRoomForm>();
 
   const onSubmit: SubmitHandler<ICreateRoomForm> = async ({ bet }) => {
-    const signature = await getSignatureForSockets(socket.clientId);
+    const signature = await getSignatureForSockets(socket.clientId as string);
     let tmpGameBoardObjectId;
     try {
       if (gameBoardObjectId == "") {
