@@ -7,6 +7,7 @@ import {
 import { AppDispatch } from "@/store";
 import * as GameReducer from "@/store/slices/memotest/gameSlice";
 import { SocketEventNames } from "@/types/memotest/socket-event-names.enum";
+import { Namespace } from "@/types/socket-namespaces.enum";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useContract } from "./useContract";
@@ -23,7 +24,7 @@ export const useCreateRoom = ({
   const [minBetAmount, setMinimumBetAmount] = useState(0);
   const dispatch = useDispatch<AppDispatch>();
   const [gameBoardObjectId, setGameBoard] = useState("");
-  const socket = useSocket();
+  const socket = useSocket(Namespace.memotest);
   const contractService = useContract();
   const {
     getObjectById,
@@ -64,7 +65,9 @@ export const useCreateRoom = ({
   }, [gameBoardObjectId, handleRoomCreation, socket]);
 
   const createRoom = async (bet: number) => {
-    const signature = await getSignatureForSockets(socket.clientId);
+    const signature = await getSignatureForSockets(
+      socket.clientId as string
+    );
     let tmpGameBoardObjectId;
     try {
       if (gameBoardObjectId == "") {
