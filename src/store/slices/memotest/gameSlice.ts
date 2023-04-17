@@ -1,16 +1,12 @@
 import { GameStatus, GameType } from "@/enums";
-import { IGameRoom } from "@/interfaces/GameRoom";
+import { ICurrentRoom, IGameRoom } from "@/interfaces/GameRoom";
 import { IGameBoard } from "@/interfaces/memotest/game-board.interface";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { IPlayer } from "./../../../interfaces/Player";
 
 type MemotestSlice = {
   publicRooms: IGameRoom[];
-  currentRoom: {
-    details: IGameRoom;
-    players: IPlayer[];
-    // gameReady: boolean;
-  } | null;
+  currentRoom: ICurrentRoom | null;
 };
 
 const _name = "memotest";
@@ -18,7 +14,6 @@ const _name = "memotest";
 const _initialState: MemotestSlice = {
   publicRooms: [],
   currentRoom: null,
-  // gameReady: false,
 };
 
 export const gameSlice = createSlice({
@@ -36,7 +31,7 @@ export const gameSlice = createSlice({
     ) => {
       state.currentRoom = {
         details: {
-          id: gameBoard.id,
+          id: roomCode.split(":")[1],
           isPrivate: true,
           owner: gameBoard.config.fields.creator,
           roomCode: roomCode,
@@ -49,6 +44,7 @@ export const gameSlice = createSlice({
           isCurrentPlayer:
             gameBoard.who_plays === Number(p.fields.id),
         })),
+        whoPlays: gameBoard.who_plays,
       };
     },
     createRoom: (
@@ -59,6 +55,7 @@ export const gameSlice = createSlice({
         roomCode: string;
         ownerWalletAddress: string;
         isPrivate: boolean;
+        status?: GameStatus;
       }>
     ) => {
       const newRoom: IGameRoom = {
@@ -69,8 +66,9 @@ export const gameSlice = createSlice({
         type: GameType.Memotest,
         id: payload.roomCode.split(":")[0],
       };
-      state.publicRooms.push(newRoom);
+      if (!payload.isPrivate) state.publicRooms.push(newRoom);
       state.currentRoom = {
+        whoPlays: 1,
         details: newRoom,
         players: [
           <IPlayer>{
@@ -82,7 +80,6 @@ export const gameSlice = createSlice({
       };
     },
     addPlayer: (state, action: PayloadAction<IPlayer>) => {
-      console.log(action.payload);
       state.currentRoom?.players.push({
         walletAddress: action.payload?.walletAddress?.length
           ? action.payload.walletAddress
@@ -93,9 +90,24 @@ export const gameSlice = createSlice({
       if (state.currentRoom?.details)
         state.currentRoom.details.gameStatus = GameStatus.Playing;
     },
-    // changeGameState: (state) => {
-    //   state.gameReady = !state.gameReady;
-    // },
+    changeGameState: (
+      state,
+      action: PayloadAction<{ status: GameStatus }>
+    ) => {
+      if (state.currentRoom) {
+        return {
+          ...state,
+          currentRoom: {
+            ...state.currentRoom,
+            details: {
+              ...state.currentRoom.details,
+              gameStatus: action.payload.status,
+            },
+          },
+        };
+      }
+      return state;
+    },
     setRooms: (state, action: PayloadAction<IGameRoom[]>) => {
       state.publicRooms = action.payload;
     },
@@ -106,7 +118,7 @@ export const gameSlice = createSlice({
 });
 
 export const {
-  // changeGameState,
+  changeGameState,
   enterRoom,
   addPlayer,
   createRoom,

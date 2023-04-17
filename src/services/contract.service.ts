@@ -43,7 +43,6 @@ export class MemotestContract {
     });
     tx.transferObjects([coin], tx.pure(this.wallet.address));
     tx.setGasBudget(9000000);
-    console.log(coin, tx); // TODO Remove
     const res = await this.wallet.signAndExecuteTransactionBlock({
       transactionBlock: tx as any,
     });
@@ -56,7 +55,7 @@ export class MemotestContract {
       target: `${environment.memotest.package}::memotest::start_game`,
       arguments: [tx.pure(gameBoard)],
     });
-    tx.setGasBudget(10000);
+    tx.setGasBudget(9000000);
     const res = await this.wallet.signAndExecuteTransactionBlock({
       transactionBlock: tx as any,
       options: {

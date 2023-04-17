@@ -45,8 +45,6 @@ export const Lobby = () => {
         <JoinRoom onJoinRoom={onSetLobbyReady} />
       )}
 
-      {/* TODO: create room form */}
-
       {RoomStatus === "create-room" && (
         <CreateRoom onCreateRoom={onSetLobbyReady} />
       )}

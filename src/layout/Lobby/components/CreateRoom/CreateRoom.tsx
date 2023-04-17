@@ -31,7 +31,6 @@ export const CreateRoom = ({
   });
 
   const onSubmit: SubmitHandler<ICreateRoomForm> = async (form) => {
-    console.log(form);
     await createRoom(form.bet, form.isPrivate);
   };
 
@@ -61,7 +60,6 @@ export const CreateRoom = ({
             Create a private room
           </label>
           <input
-            value={"yes"}
             className={`form-checkbox mx-1 ${styles.inputStyles}`}
             type="checkbox"
             {...register("isPrivate", { value: false })}

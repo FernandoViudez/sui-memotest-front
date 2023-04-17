@@ -1,4 +1,5 @@
 import { GameStatus, GameType } from "@/enums";
+import { IPlayer } from "./Player";
 
 export interface IGameRoom {
   id: string;
@@ -7,4 +8,10 @@ export interface IGameRoom {
   owner: string;
   gameStatus: GameStatus;
   type: GameType;
+}
+
+export interface ICurrentRoom {
+  details: IGameRoom;
+  players: IPlayer[];
+  whoPlays: number;
 }
