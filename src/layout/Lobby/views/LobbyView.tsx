@@ -1,4 +1,9 @@
-import { useSocket } from "@/hooks/memotest";
+import {
+  useContract,
+  useProvider,
+  useSocket,
+} from "@/hooks/memotest";
+import { ICurrentRoom } from "@/interfaces/GameRoom";
 import { IPlayerJoined } from "@/interfaces/memotest/player.interface";
 import { AppDispatch, RootState } from "@/store";
 import { addPlayer } from "@/store/slices/memotest";
@@ -13,7 +18,8 @@ export const LobbyView = () => {
     (state: RootState) => state.memotest
   );
   const dispatch = useDispatch<AppDispatch>();
-
+  const { getObjectById } = useProvider();
+  const contract = useContract();
   const socket = useSocket(Namespace.memotest);
 
   const onPlayerJoined = useCallback(
@@ -28,11 +34,16 @@ export const LobbyView = () => {
     };
   });
 
-  const startGame = () => {
-    console.log("startGame");
-    // dispatch();
-    // changeGameState()
+  const startGame = async () => {
+    if ((currentRoom as ICurrentRoom).players.length < 2) {
+      return;
+    }
+    await contract.startGame(
+      currentRoom?.details.roomCode.split(":")[1] as string
+    );
+    socket.emit(SocketEventNames.startGame, {});
   };
+
   return (
     <article className="h-100 d-flex justify-content-center align-items-center">
       <div
@@ -82,6 +93,7 @@ export const LobbyView = () => {
           ))}
         </ul>
         <button
+          disabled={(currentRoom as ICurrentRoom).players.length < 2}
           onClick={startGame}
           className="btn btn-primary w-50 m-auto mt-3 mb-1"
         >

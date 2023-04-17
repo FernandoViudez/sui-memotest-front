@@ -30,7 +30,6 @@ export const useJoinRoom = ({
       const { data: gameBoard } = await getObjectById<IGameBoard>(
         roomCode.split(":")[1]
       );
-      console.log(gameBoard);
       dispatch(enterRoom({ gameBoard, roomCode }));
       onJoinRoom();
     },

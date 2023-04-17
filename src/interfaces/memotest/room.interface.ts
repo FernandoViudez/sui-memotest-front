@@ -15,5 +15,9 @@ export interface IJoinRoom {
 
 // listeners
 export interface IRoomCreated {
-  roomId: string;
+  id: string;
+  code: string;
+  owner: string;
+  status: string;
+  isPrivate: boolean;
 }

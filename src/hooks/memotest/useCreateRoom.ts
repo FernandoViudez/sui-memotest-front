@@ -1,3 +1,4 @@
+import { GameStatus } from "@/enums";
 import { environment } from "@/environment/enviornment";
 import { IGameConfig } from "@/interfaces/memotest/game-config.interface";
 import {
@@ -44,7 +45,7 @@ export const useCreateRoom = ({
       // return router.push("/");
     }
     setMinimumBetAmount(data?.minimum_bet_amount);
-  }, [getObjectById, router]);
+  }, [getObjectById]);
 
   useEffect(() => {
     getMinBetAmount();
@@ -54,9 +55,11 @@ export const useCreateRoom = ({
     (data: IRoomCreated) => {
       dispatch(
         GameReducer.createRoom({
-          roomCode: data.roomId + ":" + gameBoardObjectId,
-          ownerWalletAddress: walletAddress,
-          isPrivate: true, // TODO: define how to get if the room is private or not
+          roomCode:
+            data.id || (data as any).roomId + ":" + gameBoardObjectId,
+          ownerWalletAddress: data.owner || walletAddress,
+          isPrivate: data.isPrivate || true,
+          status: data.status as GameStatus,
         })
       );
       onCreateRoom();
@@ -71,10 +74,7 @@ export const useCreateRoom = ({
     };
   }, [gameBoardObjectId, handleRoomCreation, socket]);
 
-  const createRoom = async (
-    bet: number,
-    isPrivate: boolean = true
-  ) => {
+  const createRoom = async (bet: number, isPrivate: boolean) => {
     const signature = await getSignatureForSockets(
       socket.clientId as string
     );
@@ -93,7 +93,6 @@ export const useCreateRoom = ({
       publicKey: getPublicKeyForSockets(),
       signature,
       isPrivate,
-      // TODO: ask if you can add prop is private as a parameter for this message
     });
   };
 
