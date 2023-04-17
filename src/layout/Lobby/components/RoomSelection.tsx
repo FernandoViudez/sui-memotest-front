@@ -1,4 +1,3 @@
-import { RoomStatus } from "@/types/RoomStatus";
 import { Dispatch, SetStateAction } from "react";
 
 export const RoomSelection = ({

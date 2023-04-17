@@ -39,7 +39,7 @@ export default function Memotest() {
           <title>Memotest</title>
         </Head>
         <div className={`container p-3 ${styles.mainContainer}`}>
-          {currentRoom?.details.roomStatus === GameStatus.Playing ? (
+          {currentRoom?.details.gameStatus === GameStatus.Playing ? (
             <MemotestView />
           ) : (
             <Lobby />

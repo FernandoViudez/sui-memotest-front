@@ -71,7 +71,10 @@ export const useCreateRoom = ({
     };
   }, [gameBoardObjectId, handleRoomCreation, socket]);
 
-  const createRoom = async (bet: number) => {
+  const createRoom = async (
+    bet: number,
+    isPrivate: boolean = true
+  ) => {
     const signature = await getSignatureForSockets(
       socket.clientId as string
     );
@@ -89,6 +92,7 @@ export const useCreateRoom = ({
       gameBoardObjectId: tmpGameBoardObjectId as string,
       publicKey: getPublicKeyForSockets(),
       signature,
+      isPrivate,
       // TODO: ask if you can add prop is private as a parameter for this message
     });
   };

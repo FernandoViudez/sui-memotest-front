@@ -8,7 +8,7 @@ import { RoomStatus } from "@/types/RoomStatus";
 import styles from "./Lobby.module.css";
 
 export const Lobby = () => {
-  const [roomStatus, setOption] = useState<RoomStatus>("unset");
+  const [RoomStatus, setOption] = useState<RoomStatus>("unset");
   const [lobbyReady, setLobbyReady] = useState<boolean>(false);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export const Lobby = () => {
 
   return (
     <>
-      {roomStatus !== "unset" && (
+      {RoomStatus !== "unset" && (
         <button
           onClick={() => {
             setLobbyReady(false);
@@ -35,19 +35,19 @@ export const Lobby = () => {
         </button>
       )}
 
-      {roomStatus === "unset" && (
+      {RoomStatus === "unset" && (
         <RoomSelection onRoomSelection={setOption} />
       )}
 
       {/* TODO: create rooms list */}
 
-      {roomStatus === "join-room" && (
+      {RoomStatus === "join-room" && (
         <JoinRoom onJoinRoom={onSetLobbyReady} />
       )}
 
       {/* TODO: create room form */}
 
-      {roomStatus === "create-room" && (
+      {RoomStatus === "create-room" && (
         <CreateRoom onCreateRoom={onSetLobbyReady} />
       )}
 

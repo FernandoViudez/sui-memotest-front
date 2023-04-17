@@ -1,5 +1,6 @@
 import { GameStatus, GameType } from "@/enums";
 import { IGameRoom } from "@/interfaces/GameRoom";
+import { IGameBoard } from "@/interfaces/memotest/game-board.interface";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { IPlayer } from "./../../../interfaces/Player";
 
@@ -27,15 +28,29 @@ export const gameSlice = createSlice({
     enterRoom: (
       state,
       {
-        payload,
+        payload: { gameBoard, roomCode },
       }: PayloadAction<{
-        details: IGameRoom;
-        players: IPlayer[];
+        gameBoard: IGameBoard;
+        roomCode: string;
       }>
     ) => {
-      state.currentRoom = payload;
+      state.currentRoom = {
+        details: {
+          id: gameBoard.id,
+          isPrivate: true,
+          owner: gameBoard.config.fields.creator,
+          roomCode: roomCode,
+          gameStatus: GameStatus.Waiting,
+          type: GameType.Memotest,
+        },
+        players: gameBoard.players.map((p) => ({
+          walletAddress: p.fields.addr,
+          playerTableID: Number(p.fields.id),
+          isCurrentPlayer:
+            gameBoard.who_plays === Number(p.fields.id),
+        })),
+      };
     },
-
     createRoom: (
       state,
       {
@@ -48,7 +63,7 @@ export const gameSlice = createSlice({
     ) => {
       const newRoom: IGameRoom = {
         owner: payload.ownerWalletAddress,
-        roomStatus: GameStatus.Waiting,
+        gameStatus: GameStatus.Waiting,
         roomCode: payload.roomCode,
         isPrivate: payload.isPrivate,
         type: GameType.Memotest,
@@ -67,11 +82,16 @@ export const gameSlice = createSlice({
       };
     },
     addPlayer: (state, action: PayloadAction<IPlayer>) => {
-      state.currentRoom?.players.push(action.payload);
+      console.log(action.payload);
+      state.currentRoom?.players.push({
+        walletAddress: action.payload?.walletAddress?.length
+          ? action.payload.walletAddress
+          : "unset",
+      });
     },
     playersReady: (state) => {
       if (state.currentRoom?.details)
-        state.currentRoom.details.roomStatus = GameStatus.Playing;
+        state.currentRoom.details.gameStatus = GameStatus.Playing;
     },
     // changeGameState: (state) => {
     //   state.gameReady = !state.gameReady;

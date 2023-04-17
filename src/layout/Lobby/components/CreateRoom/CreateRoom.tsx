@@ -6,8 +6,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import styles from "./CreateRoom.module.css";
 
 interface ICreateRoomForm {
-  name: string;
-  isPrivate?: boolean;
+  isPrivate: boolean;
   bet: number;
 }
 
@@ -32,7 +31,8 @@ export const CreateRoom = ({
   });
 
   const onSubmit: SubmitHandler<ICreateRoomForm> = async (form) => {
-    await createRoom(form.bet);
+    console.log(form);
+    await createRoom(form.bet, form.isPrivate);
   };
 
   return (
@@ -51,6 +51,20 @@ export const CreateRoom = ({
               min: minBetAmount,
               required: true,
             })}
+          />
+          <small className="form-text text-warning">
+            {errors?.bet && `The min value is ${minBetAmount}`}
+          </small>
+        </div>
+        <div className="mb-5 d-flex align-items-center justify-content-center">
+          <label className="m-0 form-label">
+            Create a private room
+          </label>
+          <input
+            value={"yes"}
+            className={`form-checkbox mx-1 ${styles.inputStyles}`}
+            type="checkbox"
+            {...register("isPrivate", { value: false })}
           />
           <small className="form-text text-warning">
             {errors?.bet && `The min value is ${minBetAmount}`}

@@ -21,7 +21,7 @@ export const JoinRoom = ({
   const { joinRoom } = useJoinRoom({ onJoinRoom });
 
   const onSubmit: SubmitHandler<IJoinRoomForm> = async (form) => {
-    await joinRoom(form.roomCode, form.bet);
+    await joinRoom(form.roomCode, 100); // TODO Change
   };
 
   const {

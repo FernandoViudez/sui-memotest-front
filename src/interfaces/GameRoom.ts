@@ -5,6 +5,6 @@ export interface IGameRoom {
   roomCode: string; // roomCode -> roomId : gameBoardObjectId
   isPrivate: boolean;
   owner: string;
-  roomStatus: GameStatus;
+  gameStatus: GameStatus;
   type: GameType;
 }

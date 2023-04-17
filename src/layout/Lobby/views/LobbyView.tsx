@@ -1,4 +1,10 @@
+import { useSocket } from "@/hooks/memotest";
+import { IPlayerJoined } from "@/interfaces/memotest/player.interface";
 import { AppDispatch, RootState } from "@/store";
+import { addPlayer } from "@/store/slices/memotest";
+import { SocketEventNames } from "@/types/memotest/socket-event-names.enum";
+import { Namespace } from "@/types/socket-namespaces.enum";
+import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styles from "./LobbyView.module.css";
 
@@ -7,6 +13,20 @@ export const LobbyView = () => {
     (state: RootState) => state.memotest
   );
   const dispatch = useDispatch<AppDispatch>();
+
+  const socket = useSocket(Namespace.memotest);
+
+  const onPlayerJoined = useCallback(
+    (data: IPlayerJoined) => dispatch(addPlayer(data)),
+    [dispatch]
+  );
+
+  useEffect(() => {
+    socket.listen(SocketEventNames.onPlayerJoined, onPlayerJoined);
+    return () => {
+      socket.off(SocketEventNames.onPlayerJoined, onPlayerJoined);
+    };
+  });
 
   const startGame = () => {
     console.log("startGame");
