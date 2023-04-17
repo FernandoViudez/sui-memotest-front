@@ -1,4 +1,5 @@
 import { GamePreviewCard } from "@/components/shared/GamePreviewCard/GamePreviewCard";
+
 import Head from "next/head";
 
 export default function Home() {

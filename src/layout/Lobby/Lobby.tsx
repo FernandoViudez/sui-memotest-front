@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CreateRoom } from "./components/CreateRoom/CreateRoom";
-import { RoomList } from "./components/RoomList/RoomList";
+import { JoinRoom } from "./components/JoinRoom/JoinRoom";
 import { RoomSelection } from "./components/RoomSelection";
 import { LobbyView } from "./views/LobbyView";
 
@@ -8,7 +8,7 @@ import { RoomStatus } from "@/types/RoomStatus";
 import styles from "./Lobby.module.css";
 
 export const Lobby = () => {
-  const [roomStatus, setOption] = useState<RoomStatus>("unset");
+  const [RoomStatus, setOption] = useState<RoomStatus>("unset");
   const [lobbyReady, setLobbyReady] = useState<boolean>(false);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export const Lobby = () => {
 
   return (
     <>
-      {roomStatus !== "unset" && (
+      {RoomStatus !== "unset" && (
         <button
           onClick={() => {
             setLobbyReady(false);
@@ -35,15 +35,19 @@ export const Lobby = () => {
         </button>
       )}
 
-      {roomStatus === "unset" && <RoomSelection onRoomSelection={setOption} />}
+      {RoomStatus === "unset" && (
+        <RoomSelection onRoomSelection={setOption} />
+      )}
 
       {/* TODO: create rooms list */}
 
-      {roomStatus === "join-room" && <RoomList onJoinRoom={onSetLobbyReady} />}
+      {RoomStatus === "join-room" && (
+        <JoinRoom onJoinRoom={onSetLobbyReady} />
+      )}
 
       {/* TODO: create room form */}
 
-      {roomStatus === "create-room" && (
+      {RoomStatus === "create-room" && (
         <CreateRoom onCreateRoom={onSetLobbyReady} />
       )}
 

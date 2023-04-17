@@ -1,27 +1,53 @@
+import { ProviderResponse } from "@/interfaces/ProviderResponse";
+import { JsonRpcProvider } from "@mysten/sui.js";
 import { useWallet } from "@suiet/wallet-kit";
 import { useEffect, useState } from "react";
-import { JsonRpcProvider } from "@mysten/sui.js";
 import { provider } from "../../services/sui-provider.service";
 
 export const useProvider = () => {
   const wallet = useWallet();
-  const [localProvider, setProvider] = useState({} as JsonRpcProvider);
+  const [localProvider, setProvider] = useState(
+    {} as JsonRpcProvider
+  );
 
   useEffect(() => {
     if (!wallet.connected) return;
     setProvider(provider);
   }, [wallet.connected]);
 
-  const getObjectById = async <T>(objectId: string): Promise<T> => {
-    const obj = await provider?.getObject({
-      id: objectId,
-      options: {
-        showContent: true,
-        showOwner: true,
-        showType: true,
-      },
-    });
-    return (obj.data?.content as any)?.fields as T;
+  const getObjectById = async <T>(
+    objectId: string
+  ): Promise<ProviderResponse<T>> => {
+    try {
+      const obj = await provider?.getObject({
+        id: objectId,
+        options: {
+          showContent: true,
+          showOwner: true,
+          showType: true,
+        },
+      });
+      if (obj?.error) {
+        return {
+          data: null as T,
+          error: {
+            message: obj.error?.code,
+            details: JSON.stringify(obj.error),
+          },
+        };
+      }
+      return {
+        data: (obj.data?.content as any)?.fields as T,
+      };
+    } catch (error: any) {
+      return {
+        data: null as T,
+        error: {
+          message: error?.message || error?.msg,
+          details: error,
+        },
+      };
+    }
   };
 
   const getMyCoins = async () => {
@@ -37,20 +63,22 @@ export const useProvider = () => {
 
   const getSignatureForSockets = async (clientId: string) => {
     const { signature } = await wallet.signMessage({
-      message: new TextEncoder().encode(wallet.address + ":" + clientId),
+      message: new TextEncoder().encode(
+        wallet.address + ":" + clientId
+      ),
     });
     return signature;
   };
 
   const getPublicKeyForSockets = () => {
-    return Buffer.from(wallet.account?.publicKey as Uint8Array).toString(
-      "base64"
-    );
+    return Buffer.from(
+      wallet.account?.publicKey as Uint8Array
+    ).toString("base64");
   };
 
   return {
     provider: localProvider,
-    getObjectById,
+    getObjectById, // NOTE llamar para obtener el room
     getMyCoins,
     getSignatureForSockets,
     getPublicKeyForSockets,

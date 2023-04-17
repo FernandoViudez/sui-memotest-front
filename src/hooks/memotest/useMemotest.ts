@@ -25,20 +25,26 @@ export const useMemotest = (memotestTable: ICard[]) => {
     (state: RootState) => state.memotest
   );
 
+  const room = memotestState.currentRoom as {
+    details: IGameRoom;
+    players: IPlayer[];
+  };
+
+  // TODO change this to define a random player to start game
   const [currentPlayer, setCurrentPlayer] = useState<IPlayer>(
-    (memotestState.currentRoom as IGameRoom).players[0]
+    room.players[0]
   );
 
   const onRevealCard = useCallback((position: number) => {
     // TODO: Get card img & id and remove fakeIds arr
 
-    const cardData = {
+    const cardData: ICard = {
       id: `${
         position < _fakeIds.length
           ? _fakeIds[position]
           : _fakeIds[position - _fakeIds.length]
       }`,
-      image: null,
+      image: "",
       position,
       revealed: true,
     };
@@ -106,21 +112,20 @@ export const useMemotest = (memotestTable: ICard[]) => {
     if (turn.status !== "finished") return;
 
     setCurrentPlayer((player) => {
-      const players = (memotestState.currentRoom as IGameRoom)
-        .players;
+      const players = room.players as IPlayer[];
       const playerIdx = players.indexOf(player);
       if (playerIdx < players.length - 1)
         return players[playerIdx + 1];
       else if (playerIdx === players.length - 1) return players[0];
       else return player;
     });
-  }, [turn.status, memotestState.currentRoom]);
+  }, [turn.status, room]);
 
   return {
     turn,
     onRevealCard,
     cardsRevealed,
     currentPlayer,
-    players: (memotestState.currentRoom as IGameRoom).players,
+    players: room.players as IPlayer[],
   };
 };

@@ -1,12 +1,10 @@
-import { IPlayer } from "./Player";
+import { GameStatus, GameType } from "@/enums";
 
 export interface IGameRoom {
-  name: string;
-  players: IPlayer[];
-  isAvailable: boolean;
   id: string;
+  roomCode: string; // roomCode -> roomId : gameBoardObjectId
   isPrivate: boolean;
   owner: string;
-  roomStatus: "pending" | "ready-to-play";
-  type: "memotest"; // | 'trivia' | etc...
+  gameStatus: GameStatus;
+  type: GameType;
 }

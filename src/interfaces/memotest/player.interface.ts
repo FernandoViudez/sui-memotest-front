@@ -1,4 +1,5 @@
 export interface IPlayerJoined {
-  id: number;
+  id: number; // position at the table
+  walletAddress: string;
 }
 export interface IPlayerLeft extends IPlayerJoined {}

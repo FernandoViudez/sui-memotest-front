@@ -1,7 +1,9 @@
-export interface ICard {
+import { ICardTurnedOver } from "./memotest/game.interface";
+
+export interface ICard extends ICardTurnedOver {
+  id: string;
+  image: string;
   position: number;
-  image: string | null;
   revealed: boolean;
-  id: string | null;
   revealedByPlayer?: string;
 }

@@ -1,33 +1,36 @@
 import { MemotestView } from "@/components/pages/Memotest/views/MemotestView";
+import { GameStatus } from "@/enums";
+import { useSocket } from "@/hooks/memotest";
 import { useProtectRoutes } from "@/hooks/useProtectRoutes/useProtectRoutes";
+import { SocketError } from "@/interfaces/socket-error.interface";
 import { Lobby } from "@/layout/Lobby";
 import { AppDispatch, RootState } from "@/store";
-import { changeGameState } from "@/store/slices/memotest";
+import { SocketEventNames } from "@/types/memotest/socket-event-names.enum";
+import { Namespace } from "@/types/socket-namespaces.enum";
 import Head from "next/head";
+import { useCallback, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styles from "./Memotest.module.css";
-import { useEffect } from "react";
-import { useSocket } from "../../hooks/memotest";
-import { SocketError } from "../../interfaces/socket-error.interface";
-import { SocketEventNames } from "../../types/memotest/socket-event-names.enum";
-import { Namespace } from "../../types/socket-namespaces.enum";
 
 export default function Memotest() {
-  const { game } = useSelector((state: RootState) => state.memotest);
+  const { currentRoom } = useSelector(
+    (state: RootState) => state.memotest
+  );
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useProtectRoutes("/memotest", () => {
-    dispatch(changeGameState());
+    // TODO Remove
+    console.log("not authenticated");
   });
 
   const socket = useSocket(Namespace.memotest);
 
-  useEffect(() => {
-    socket.listen(SocketEventNames.onError, handleError);
+  const handleError = useCallback((error: SocketError) => {
+    alert(JSON.stringify(error));
   }, []);
 
-  function handleError(error: SocketError) {
-    alert(JSON.stringify(error));
-  }
+  useEffect(() => {
+    socket.listen(SocketEventNames.onError, handleError);
+  }, [handleError, socket]);
 
   return (
     isAuthenticated() && (
@@ -36,7 +39,11 @@ export default function Memotest() {
           <title>Memotest</title>
         </Head>
         <div className={`container p-3 ${styles.mainContainer}`}>
-          {game.ready ? <MemotestView /> : <Lobby />}
+          {currentRoom?.details.gameStatus === GameStatus.Playing ? (
+            <MemotestView />
+          ) : (
+            <Lobby />
+          )}
         </div>
       </>
     )

@@ -1,104 +1,116 @@
+import { GameStatus, GameType } from "@/enums";
 import { IGameRoom } from "@/interfaces/GameRoom";
-import { IPlayer } from "@/interfaces/Player";
+import { IGameBoard } from "@/interfaces/memotest/game-board.interface";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { IPlayer } from "./../../../interfaces/Player";
 
 type MemotestSlice = {
-  rooms: IGameRoom[];
-  currentRoom?: IGameRoom;
-  game: {
-    ready: boolean;
-  };
+  publicRooms: IGameRoom[];
+  currentRoom: {
+    details: IGameRoom;
+    players: IPlayer[];
+    // gameReady: boolean;
+  } | null;
 };
 
 const _name = "memotest";
 
 const _initialState: MemotestSlice = {
-  rooms: [
-    {
-      //TODO Remove when development is done
-      id: "1",
-      isAvailable: true,
-      isPrivate: false,
-      name: "Test Room",
-      owner:
-        "0x4a95d662730997901b91aaf6c79ddea8c711a55b7770eff0bd5a909ecf749098",
-      players: [
-        {
-          walletAddress:
-            "0x4a95d662730997901b91aaf6c79ddea8c711a55b7770eff0bd5a908",
-          name: "John Doe",
-        },
-      ],
-      roomStatus: "pending",
-      type: "memotest",
-    },
-  ],
-  game: {
-    ready: false,
-  },
+  publicRooms: [],
+  currentRoom: null,
+  // gameReady: false,
 };
 
 export const gameSlice = createSlice({
   name: _name,
   initialState: _initialState,
   reducers: {
-    addRoom: (state, action: PayloadAction<IGameRoom>) => {
-      state.rooms.push({ ...action.payload });
-    },
     enterRoom: (
+      state,
+      {
+        payload: { gameBoard, roomCode },
+      }: PayloadAction<{
+        gameBoard: IGameBoard;
+        roomCode: string;
+      }>
+    ) => {
+      state.currentRoom = {
+        details: {
+          id: gameBoard.id,
+          isPrivate: true,
+          owner: gameBoard.config.fields.creator,
+          roomCode: roomCode,
+          gameStatus: GameStatus.Waiting,
+          type: GameType.Memotest,
+        },
+        players: gameBoard.players.map((p) => ({
+          walletAddress: p.fields.addr,
+          playerTableID: Number(p.fields.id),
+          isCurrentPlayer:
+            gameBoard.who_plays === Number(p.fields.id),
+        })),
+      };
+    },
+    createRoom: (
       state,
       {
         payload,
       }: PayloadAction<{
-        currentRoom: IGameRoom;
-        newPlayer: IPlayer;
-        isOwner: boolean;
+        roomCode: string;
+        ownerWalletAddress: string;
+        isPrivate: boolean;
       }>
     ) => {
-      state.currentRoom = payload.currentRoom;
-      state.currentRoom = {
-        ...state.currentRoom,
-        players: [...state.currentRoom.players, payload.newPlayer],
+      const newRoom: IGameRoom = {
+        owner: payload.ownerWalletAddress,
+        gameStatus: GameStatus.Waiting,
+        roomCode: payload.roomCode,
+        isPrivate: payload.isPrivate,
+        type: GameType.Memotest,
+        id: payload.roomCode.split(":")[0],
       };
-      if (payload.isOwner)
-        state.currentRoom.owner = payload.newPlayer.walletAddress;
+      state.publicRooms.push(newRoom);
+      state.currentRoom = {
+        details: newRoom,
+        players: [
+          <IPlayer>{
+            walletAddress: payload.ownerWalletAddress,
+            isCurrentPlayer: true,
+            playerTableID: 1,
+          },
+        ],
+      };
     },
     addPlayer: (state, action: PayloadAction<IPlayer>) => {
-      state.currentRoom?.players.push(action.payload);
+      console.log(action.payload);
+      state.currentRoom?.players.push({
+        walletAddress: action.payload?.walletAddress?.length
+          ? action.payload.walletAddress
+          : "unset",
+      });
     },
     playersReady: (state) => {
-      if (state.currentRoom)
-        state.currentRoom.roomStatus = "ready-to-play";
+      if (state.currentRoom?.details)
+        state.currentRoom.details.gameStatus = GameStatus.Playing;
     },
-    changeGameState: (state) => {
-      return {
-        ...state,
-        game: {
-          ready: !state.game.ready,
-        },
-      };
-    },
-    cancelGame: (state) => {
-      if (state.currentRoom) state.currentRoom.roomStatus = "pending";
+    // changeGameState: (state) => {
+    //   state.gameReady = !state.gameReady;
+    // },
+    setRooms: (state, action: PayloadAction<IGameRoom[]>) => {
+      state.publicRooms = action.payload;
     },
     exitRoom: (state) => {
-      state.currentRoom = undefined;
-    },
-    deleteRoom: (state, action: PayloadAction<string>) => {
-      return {
-        ...state,
-        rooms: state.rooms.filter((r) => r.id === action.payload),
-      };
+      state.currentRoom = null;
     },
   },
 });
 
 export const {
+  // changeGameState,
   enterRoom,
   addPlayer,
-  addRoom,
-  changeGameState,
+  createRoom,
   playersReady,
-  cancelGame,
+  setRooms,
   exitRoom,
 } = gameSlice.actions;

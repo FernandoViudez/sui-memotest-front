@@ -1,4 +1,4 @@
-import { CoinBalance, TransactionBlock } from "@mysten/sui.js";
+import { TransactionBlock } from "@mysten/sui.js";
 import { WalletContextState } from "@suiet/wallet-kit";
 import { environment } from "../environment/enviornment";
 
@@ -43,6 +43,7 @@ export class MemotestContract {
     });
     tx.transferObjects([coin], tx.pure(this.wallet.address));
     tx.setGasBudget(9000000);
+    console.log(coin, tx); // TODO Remove
     const res = await this.wallet.signAndExecuteTransactionBlock({
       transactionBlock: tx as any,
     });
@@ -73,7 +74,11 @@ export class MemotestContract {
     const tx = new TransactionBlock();
     tx.moveCall({
       target: `${environment.memotest.config}::memotest::turn_card_over`,
-      arguments: [tx.pure(gameBoard), tx.pure(cardId), tx.pure(cardsLocation)],
+      arguments: [
+        tx.pure(gameBoard),
+        tx.pure(cardId),
+        tx.pure(cardsLocation),
+      ],
     });
     tx.setGasBudget(10000);
     const res = await this.wallet.signAndExecuteTransactionBlock({
