@@ -14,7 +14,7 @@ export const JoinRoom = ({
   onJoinRoom: () => void;
 }) => {
   const {
-    memotest: { rooms },
+    memotest: { publicRooms },
     wallet: { walletAddress, name },
   } = useSelector((state: RootState) => state);
 

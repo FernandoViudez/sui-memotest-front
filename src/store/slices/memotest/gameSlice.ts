@@ -4,7 +4,7 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { IPlayer } from "./../../../interfaces/Player";
 
 type MemotestSlice = {
-  rooms: IGameRoom[];
+  publicRooms: IGameRoom[];
   currentRoom: {
     details: IGameRoom;
     players: IPlayer[];
@@ -15,16 +15,10 @@ type MemotestSlice = {
 const _name = "memotest";
 
 const _initialState: MemotestSlice = {
-  rooms: [],
+  publicRooms: [],
   currentRoom: null,
   // gameReady: false,
 };
-
-/**
- * Traer rooms en join room o si las tenemos listadas al comienzo buscarlas en el store
- *
- *
- */
 
 export const gameSlice = createSlice({
   name: _name,
@@ -60,8 +54,17 @@ export const gameSlice = createSlice({
         type: GameType.Memotest,
         id: payload.roomCode.split(":")[0],
       };
-
-      state.rooms.push(newRoom);
+      state.publicRooms.push(newRoom);
+      state.currentRoom = {
+        details: newRoom,
+        players: [
+          <IPlayer>{
+            walletAddress: payload.ownerWalletAddress,
+            isCurrentPlayer: true,
+            playerTableID: 1,
+          },
+        ],
+      };
     },
     addPlayer: (state, action: PayloadAction<IPlayer>) => {
       state.currentRoom?.players.push(action.payload);
@@ -74,7 +77,7 @@ export const gameSlice = createSlice({
     //   state.gameReady = !state.gameReady;
     // },
     setRooms: (state, action: PayloadAction<IGameRoom[]>) => {
-      state.rooms = action.payload;
+      state.publicRooms = action.payload;
     },
     exitRoom: (state) => {
       state.currentRoom = null;

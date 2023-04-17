@@ -15,6 +15,10 @@ a {
   user-select: none;
 }
 
+.allow-user-select {
+  user-select: text;
+}
+
 html,
 body,
 #__next {

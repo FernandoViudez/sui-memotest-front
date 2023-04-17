@@ -37,6 +37,9 @@ export const useJoinRoom = ({
     const signature = await getSignatureForSockets(
       socket.clientId as string
     );
+
+    console.log(gameId);
+
     await contractService.joinRoom(gameId, bet as number);
     socket.emit<IJoinRoom>(SocketEventNames.joinRoom, {
       publicKey: getPublicKeyForSockets(),

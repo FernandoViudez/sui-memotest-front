@@ -18,18 +18,31 @@ export const LobbyView = () => {
       <div
         className={`d-flex flex-column justify-content-between m-auto bgGlass w-75 p-2 ${styles.mh50vh}`}
       >
-        {/* IN loby game code to share */}
         <div>
-          <p className="h4 text-center text-light m-0">
-            Room code to share
-          </p>
-          <p className="text-center text-white m-0 mt-3">
-            {currentRoom?.details.id}
-          </p>
-        </div>
-        <div>
-          <p className="h4 text-center text-light m-0">Players</p>
-          <hr className="text-light mx-auto mt-0 w-50" />
+          <div className="d-flex px-3 w-100 align-items-center justify-content-between">
+            <p className="h4 text-center text-light m-0">Players</p>
+            {/* IN loby game code to share */}
+            <div className="d-flex flex-column justify-content-center">
+              <strong className="text-light text-center">
+                Room Code
+              </strong>
+              <div className="d-flex justify-content-center align-items-center">
+                <span className="text-light">
+                  {currentRoom?.details.roomCode.slice(0, 10) + "..."}
+                </span>
+                <span
+                  onClick={() =>
+                    navigator.clipboard.writeText(
+                      currentRoom?.details.roomCode as string
+                    )
+                  }
+                  className={`text-primary mx-2 ${styles.cursorPointer}`}
+                >
+                  copy
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
         <ul className="list-group" style={{ borderRadius: 0 }}>
           {currentRoom?.players.map((p, index) => (

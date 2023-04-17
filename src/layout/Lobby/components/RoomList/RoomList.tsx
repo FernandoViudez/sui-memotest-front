@@ -1,31 +1,38 @@
 import { AppDispatch, RootState } from "@/store";
+import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { useState, useEffect } from "react";
 import {
   useContract,
   useProvider,
   useSocket,
 } from "../../../../hooks/memotest";
-import { SocketEventNames } from "../../../../types/memotest/socket-event-names.enum";
+import { IGameBoard } from "../../../../interfaces/memotest/game-board.interface";
 import { IPlayerJoined } from "../../../../interfaces/memotest/player.interface";
 import { IJoinRoom } from "../../../../interfaces/memotest/room.interface";
+import { SocketEventNames } from "../../../../types/memotest/socket-event-names.enum";
 import { Namespace } from "../../../../types/socket-namespaces.enum";
-import { IGameBoard } from "../../../../interfaces/memotest/game-board.interface";
 
 interface IJoinRoomForm {
   roomCode: string;
   bet: number;
 }
-export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
+export const RoomList = ({
+  onJoinRoom,
+}: {
+  onJoinRoom: () => void;
+}) => {
   const {
-    memotest: { rooms },
+    memotest: { publicRooms },
     wallet: { walletAddress, name },
   } = useSelector((state: RootState) => state);
   const [roomCode, setRoomCode] = useState("");
   const dispatch = useDispatch<AppDispatch>();
-  const { getObjectById, getPublicKeyForSockets, getSignatureForSockets } =
-    useProvider();
+  const {
+    getObjectById,
+    getPublicKeyForSockets,
+    getSignatureForSockets,
+  } = useProvider();
   const socket = useSocket(Namespace.memotest);
   const contractService = useContract();
 
@@ -47,7 +54,9 @@ export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
     setRoomCode(form.roomCode);
     const [roomId, gameId] = form.roomCode.split(":");
     const board = await getObjectById<IGameBoard>(gameId);
-    const signature = await getSignatureForSockets(socket.clientId as string);
+    const signature = await getSignatureForSockets(
+      socket.clientId as string
+    );
     await contractService.joinRoom(
       gameId,
       board?.config?.fields?.minimum_bet_amount

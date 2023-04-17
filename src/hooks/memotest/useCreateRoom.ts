@@ -8,6 +8,7 @@ import { AppDispatch } from "@/store";
 import * as GameReducer from "@/store/slices/memotest/gameSlice";
 import { SocketEventNames } from "@/types/memotest/socket-event-names.enum";
 import { Namespace } from "@/types/socket-namespaces.enum";
+import { useRouter } from "next/router";
 import { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useContract } from "./useContract";
@@ -31,13 +32,19 @@ export const useCreateRoom = ({
     getPublicKeyForSockets,
     getSignatureForSockets,
   } = useProvider();
+  const router = useRouter();
 
   const getMinBetAmount = useCallback(async () => {
-    const { minimum_bet_amount } = await getObjectById<IGameConfig>(
+    const { data, error } = await getObjectById<IGameConfig>(
       environment.memotest.config
     );
-    setMinimumBetAmount(minimum_bet_amount);
-  }, [getObjectById]);
+    if (error) {
+      console.log(error);
+      alert(`Something went wrong, try later\nLogs${error?.message}`);
+      // return router.push("/");
+    }
+    setMinimumBetAmount(data?.minimum_bet_amount);
+  }, [getObjectById, router]);
 
   useEffect(() => {
     getMinBetAmount();

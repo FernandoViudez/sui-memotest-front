@@ -2,8 +2,16 @@
   min-height: 50vh;
 }
 
+.listGroupItem:first-of-type {
+  border-top: 1px solid var(--border-gray);
+}
+
 .listGroupItem {
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--border-gray);
+}
+
+.cursorPointer {
+  cursor: pointer;
 }
