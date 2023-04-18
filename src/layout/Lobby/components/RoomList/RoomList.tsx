@@ -1,4 +1,5 @@
 import { RootState } from "@/store";
+import { RoomStatus } from "@/types/RoomStatus";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useSelector } from "react-redux";
 
@@ -6,7 +7,13 @@ interface IJoinRoomForm {
   roomCode: string;
   bet: number;
 }
-export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
+export const RoomList = ({
+  onJoinRoom,
+  onJoinPrivateRoom,
+}: {
+  onJoinPrivateRoom: (roomStatus: RoomStatus) => void;
+  onJoinRoom: () => void;
+}) => {
   const {
     memotest: { publicRooms },
     wallet: { walletAddress, name },
