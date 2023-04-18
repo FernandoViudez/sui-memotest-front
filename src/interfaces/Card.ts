@@ -6,4 +6,5 @@ export interface ICard extends ICardTurnedOver {
   position: number;
   revealed: boolean;
   revealedByPlayer?: string;
+  perPosition: string;
 }

@@ -1,51 +1,61 @@
-import { RootState } from "@/store";
-import { SubmitHandler, useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
+import { useRoomList } from "@/hooks/memotest/useRoomList";
+import { RoomStatus } from "@/types/RoomStatus";
 
-interface IJoinRoomForm {
-  roomCode: string;
-  bet: number;
-}
-export const RoomList = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
-  const {
-    memotest: { publicRooms },
-    wallet: { walletAddress, name },
-  } = useSelector((state: RootState) => state);
+export const RoomList = ({
+  onSelectRoom,
+  onJoinPrivateRoom,
+}: {
+  onJoinPrivateRoom: (roomStatus: RoomStatus) => void;
+  onSelectRoom: () => void;
+}) => {
+  const { joinRoom, publicRooms } = useRoomList({ onSelectRoom });
 
-  const onSubmit: SubmitHandler<IJoinRoomForm> = async (form) => {
-    console.log("onSubmit");
+  const enterRoom = async (roomId: string, gameboardId: string) => {
+    await joinRoom(`${roomId}:${gameboardId}`);
   };
 
-  const {
-    register,
-    formState: { errors, isSubmitting },
-    handleSubmit,
-  } = useForm<IJoinRoomForm>();
-
   return (
-    <article className="h-100 d-flex">
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className={`form text-white d-flex flex-column p-4 w-75 m-auto bgGlass`}
-      >
-        <div className="mb-5">
-          <label className="form-label">Room code</label>
-          <input
-            placeholder="Fill with the game id provided by the creator of the room"
-            className={`form-control`}
-            {...register("roomCode", { required: true })}
-          />
-          <small className="form-text text-warning">
-            {errors?.roomCode && `Rome code is required.`}
-          </small>
+    <article className="h-100 w-100 p-3 d-flex flex-column">
+      <div>
+        <div className="d-flex justify-content-between align-items-end">
+          <p className="text-white h5">Rooms</p>
+          <button
+            onClick={() => onJoinPrivateRoom("join-room")}
+            className="btn p-1 mb-2 btn-success"
+          >
+            Join private room
+          </button>
         </div>
-        <input
-          disabled={isSubmitting}
-          value="Join Room"
-          className="btn w-50 m-auto btn-warning"
-          type="submit"
-        />
-      </form>
+        <hr className="text-light mt-0" />
+      </div>
+      <ul className="list-group  w-100">
+        {publicRooms?.length ? (
+          publicRooms.map((r) => (
+            <li
+              key={r.id}
+              className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+            >
+              <span className="text-capitalize text-secondary">
+                {r.id}
+              </span>
+              <a
+                onClick={() => enterRoom(r.id, r.gameboardObjectId)}
+                href="#"
+                className="text-capitalize text-success"
+              >
+                join
+              </a>
+            </li>
+          ))
+        ) : (
+          <div className="m-auto d-flex justify-content-center">
+            <div
+              className="spinner-border text-success"
+              role="status"
+            ></div>
+          </div>
+        )}
+      </ul>
     </article>
   );
 };

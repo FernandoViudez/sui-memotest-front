@@ -55,8 +55,7 @@ export const useCreateRoom = ({
     (data: IRoomCreated) => {
       dispatch(
         GameReducer.createRoom({
-          roomCode:
-            data.id || (data as any).roomId + ":" + gameBoardObjectId,
+          roomCode: data.id + ":" + gameBoardObjectId,
           ownerWalletAddress: data.owner || walletAddress,
           isPrivate: data.isPrivate || true,
           status: data.status as GameStatus,

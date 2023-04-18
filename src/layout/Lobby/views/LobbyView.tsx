@@ -1,4 +1,4 @@
-import { useContract, useProvider, useSocket } from "@/hooks/memotest";
+import { useContract, useSocket } from "@/hooks/memotest";
 import { ICurrentRoom } from "@/interfaces/GameRoom";
 import {
   IPlayerJoined,
@@ -8,19 +8,28 @@ import { AppDispatch, RootState } from "@/store";
 import { addPlayer, removePlayer } from "@/store/slices/memotest";
 import { SocketEventNames } from "@/types/memotest/socket-event-names.enum";
 import { Namespace } from "@/types/socket-namespaces.enum";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styles from "./LobbyView.module.css";
 
 export const LobbyView = () => {
-  const { currentRoom } = useSelector((state: RootState) => state.memotest);
   const {
-    wallet: { walletAddress, name },
+    memotest: { currentRoom },
+    wallet,
   } = useSelector((state: RootState) => state);
   const dispatch = useDispatch<AppDispatch>();
-  const { getObjectById } = useProvider();
   const contract = useContract();
   const socket = useSocket(Namespace.memotest);
+
+  const showStartGameBtn = useMemo(
+    () => currentRoom?.details.owner !== wallet.walletAddress,
+    [currentRoom, wallet]
+  );
+
+  const enableStartGameBtn = useMemo(
+    () => (currentRoom as ICurrentRoom).players.length < 2,
+    [currentRoom]
+  );
 
   const onPlayerJoined = useCallback(
     (data: IPlayerJoined) => dispatch(addPlayer(data)),
@@ -43,11 +52,10 @@ export const LobbyView = () => {
   });
 
   const startGame = async () => {
-    if ((currentRoom as ICurrentRoom).players.length < 2) {
-      return;
-    }
+    if (enableStartGameBtn) return;
+
     await contract.startGame(
-      currentRoom?.details.roomCode.split(":")[1] as string
+      currentRoom?.details.gameboardObjectId as string
     );
     socket.emit(SocketEventNames.startGame);
   };
@@ -62,15 +70,17 @@ export const LobbyView = () => {
             <p className="h4 text-center text-light m-0">Players</p>
             {/* IN loby game code to share */}
             <div className="d-flex flex-column justify-content-center">
-              <strong className="text-light text-center">Room Code</strong>
+              <strong className="text-light text-center">
+                Room Code
+              </strong>
               <div className="d-flex justify-content-center align-items-center">
                 <span className="text-light">
-                  {currentRoom?.details.roomCode.slice(0, 10) + "..."}
+                  {currentRoom?.details.id + "..."}
                 </span>
                 <span
                   onClick={() =>
                     navigator.clipboard.writeText(
-                      currentRoom?.details.roomCode as string
+                      `${currentRoom?.details.id}:${currentRoom?.details.gameboardObjectId}`
                     )
                   }
                   className={`text-primary mx-2 ${styles.cursorPointer}`}
@@ -87,7 +97,11 @@ export const LobbyView = () => {
               key={index}
               className={`list-group-item mb-1 text-white ${
                 styles.listGroupItem
-              } ${p.walletAddress == walletAddress ? "bg-light" : ""}`}
+              } ${
+                p.walletAddress === wallet.walletAddress
+                  ? "bg-light"
+                  : ""
+              }`}
             >
               <div className="d-flex justify-content-between">
                 <strong className="text-capitalize text-secondary">
@@ -100,11 +114,13 @@ export const LobbyView = () => {
             </li>
           ))}
         </ul>
-        {currentRoom?.details.owner != walletAddress ? (
-          <div></div>
+        {showStartGameBtn ? (
+          <></>
         ) : (
           <button
-            disabled={(currentRoom as ICurrentRoom).players.length < 2}
+            disabled={
+              (currentRoom as ICurrentRoom).players.length < 2
+            }
             onClick={startGame}
             className="btn btn-primary w-50 m-auto mt-3 mb-1"
           >

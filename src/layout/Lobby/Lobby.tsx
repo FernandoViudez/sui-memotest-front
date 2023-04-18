@@ -6,6 +6,7 @@ import { LobbyView } from "./views/LobbyView";
 
 import { RoomStatus } from "@/types/RoomStatus";
 import styles from "./Lobby.module.css";
+import { RoomList } from "./components/RoomList/RoomList";
 
 export const Lobby = () => {
   const [RoomStatus, setOption] = useState<RoomStatus>("unset");
@@ -19,6 +20,10 @@ export const Lobby = () => {
 
   const onSetLobbyReady = () => {
     setLobbyReady((state) => !state);
+  };
+
+  const onJoinPrivateRoom = (roomStatus: RoomStatus) => {
+    setOption(roomStatus);
   };
 
   return (
@@ -40,6 +45,13 @@ export const Lobby = () => {
       )}
 
       {/* TODO: create rooms list */}
+
+      {RoomStatus === "room-list" && (
+        <RoomList
+          onSelectRoom={onSetLobbyReady}
+          onJoinPrivateRoom={onJoinPrivateRoom}
+        />
+      )}
 
       {RoomStatus === "join-room" && (
         <JoinRoom onJoinRoom={onSetLobbyReady} />

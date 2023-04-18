@@ -49,6 +49,7 @@ export const CreateRoom = ({
             {...register("bet", {
               min: minBetAmount,
               required: true,
+              value: 100,
             })}
           />
           <small className="form-text text-warning">

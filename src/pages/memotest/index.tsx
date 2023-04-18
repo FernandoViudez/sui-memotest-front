@@ -1,6 +1,6 @@
 import { MemotestView } from "@/components/pages/Memotest/views/MemotestView";
 import { GameStatus } from "@/enums";
-import { useProvider, useSocket } from "@/hooks/memotest";
+import { useSocket } from "@/hooks/memotest";
 import { useProtectRoutes } from "@/hooks/useProtectRoutes/useProtectRoutes";
 import { SocketError } from "@/interfaces/socket-error.interface";
 import { Lobby } from "@/layout/Lobby";
@@ -23,7 +23,6 @@ export default function Memotest() {
     console.log("not authenticated");
   });
   const socket = useSocket(Namespace.memotest);
-  const { getObjectById } = useProvider();
 
   const handleError = useCallback((error: SocketError) => {
     alert(JSON.stringify(error));
@@ -42,6 +41,7 @@ export default function Memotest() {
   }, [dispatch]);
 
   useEffect(() => {
+    console.log("RENDER");
     socket.listen(SocketEventNames.onGameStarted, handleGameStatus);
     return () => {
       socket.off(SocketEventNames.onGameStarted, handleGameStatus);

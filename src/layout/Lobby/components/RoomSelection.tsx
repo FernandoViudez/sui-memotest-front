@@ -1,3 +1,4 @@
+import { RoomStatus } from "@/types/RoomStatus";
 import { Dispatch, SetStateAction } from "react";
 
 export const RoomSelection = ({
@@ -15,7 +16,7 @@ export const RoomSelection = ({
           Create Room
         </button>
         <button
-          onClick={() => onRoomSelection("join-room")}
+          onClick={() => onRoomSelection("room-list")}
           className="btn btn-warning"
         >
           Join Room

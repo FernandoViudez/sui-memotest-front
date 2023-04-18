@@ -33,12 +33,13 @@ export const gameSlice = createSlice({
         roomCode: string;
       }>
     ) => {
+      const [id, gameboardObjectId] = roomCode.split(":");
       state.currentRoom = {
         details: {
-          id: roomCode.split(":")[1],
+          id,
           isPrivate: true,
           owner: gameBoard.config.fields.creator,
-          roomCode: roomCode,
+          gameboardObjectId,
           gameStatus: GameStatus.Waiting,
           type: GameType.Memotest,
         },
@@ -61,13 +62,15 @@ export const gameSlice = createSlice({
         status?: GameStatus;
       }>
     ) => {
+      const [id, gameboardObjectId] = payload.roomCode.split(":");
+
       const newRoom: IGameRoom = {
         owner: payload.ownerWalletAddress,
         gameStatus: GameStatus.Waiting,
-        roomCode: payload.roomCode,
+        gameboardObjectId,
         isPrivate: payload.isPrivate,
         type: GameType.Memotest,
-        id: payload.roomCode.split(":")[0],
+        id,
       };
       if (!payload.isPrivate) state.publicRooms.push(newRoom);
       state.currentRoom = {

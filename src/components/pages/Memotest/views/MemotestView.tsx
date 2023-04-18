@@ -1,39 +1,40 @@
+import { useSocket } from "@/hooks/memotest";
 import { useMemotest } from "@/hooks/memotest/useMemotest";
-import { ICard } from "@/interfaces/Card";
 import { IPlayer } from "@/interfaces/Player";
-import { useCallback } from "react";
+import { SocketEventNames } from "@/types/memotest/socket-event-names.enum";
+import { Namespace } from "@/types/socket-namespaces.enum";
+import { useCallback, useEffect } from "react";
 import { MemotestCard } from "../MemotestCard";
 import { Player } from "../Player";
-
-const initMemotestTable: ICard[] = new Array(16).fill(0).map(
-  (v, index) =>
-    ({
-      id: "null",
-      image: "",
-      position: index,
-      revealed: false,
-    } as ICard)
-);
 
 export const MemotestView = () => {
   const {
     players: [player1, player2, player3 = null, player4 = null],
     cardsRevealed,
-    onRevealCard,
     currentPlayer,
+    whoPlays,
+    thisPlayer,
+    onRevealCard,
     turn,
-  } = useMemotest(initMemotestTable);
+  } = useMemotest();
 
-  const getPlayer = useCallback(
-    (player: IPlayer) => {
-      return {
-        ...player,
-        isCurrentPlayer:
-          player.walletAddress === currentPlayer.walletAddress,
-      };
-    },
-    [currentPlayer]
-  );
+  const socket = useSocket(Namespace.memotest);
+
+  useEffect(() => {
+    socket.listen(SocketEventNames.onTurnChanged, (data: any) => {
+      console.log(data);
+    });
+    return () => {
+      socket.off(SocketEventNames.onTurnChanged, () => {});
+    };
+  }, [socket]);
+
+  const getPlayer = useCallback((player: IPlayer) => {
+    return {
+      ...player,
+      isCurrentPlayer: player.playerTableID === 1,
+    };
+  }, []);
 
   return (
     <div className="row p-0 m-0 h-100">
@@ -54,6 +55,7 @@ export const MemotestView = () => {
                   onRevealCard={onRevealCard}
                   position={i}
                   cannotBeFlipped={
+                    !thisPlayer?.isCurrentPlayer ||
                     turn.status === "finished" ||
                     !!c?.revealedByPlayer?.length
                   }
