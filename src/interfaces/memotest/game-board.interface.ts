@@ -11,8 +11,8 @@ export interface IGameBoard {
       image: string;
       location: string;
       per_location: string;
-    }[];
-  };
+    };
+  }[];
   players: {
     type: string;
     fields: {

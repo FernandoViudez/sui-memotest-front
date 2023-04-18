@@ -1,19 +1,28 @@
 import { ICard } from "@/interfaces/Card";
-import { IGameRoom } from "@/interfaces/GameRoom";
+import { ICurrentRoom } from "@/interfaces/GameRoom";
 import { IPlayer } from "@/interfaces/Player";
 import { ITurn } from "@/interfaces/Turn";
 import { RootState } from "@/store";
 import { useCallback, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useProvider } from "./useProvider";
 
-const _fakeIds = [
-  1018844906736, 540746393400, 416561540968, 747315715134,
-  1015200748329, 346520388994, 1180316005379, 82295636262,
-];
+const initMemotestTable: ICard[] = new Array(16)
+  .fill(0)
+  .map((v, index) => ({
+    id: "0",
+    image: "",
+    revealed: false,
+    perPosition: 0 + "",
+    position: 0,
+    revealedByPlayer: "",
+  }));
 
-export const useMemotest = (memotestTable: ICard[]) => {
+export const useMemotest = () => {
+  const { getObjectById } = useProvider();
+
   const [cardsRevealed, setCardsRevealed] =
-    useState<ICard[]>(memotestTable);
+    useState<ICard[]>(initMemotestTable);
 
   const [turn, setTurn] = useState<ITurn>({
     status: "started",
@@ -21,32 +30,22 @@ export const useMemotest = (memotestTable: ICard[]) => {
     flippedCards: new Array(),
   });
 
-  const memotestState = useSelector(
-    (state: RootState) => state.memotest
+  const { memotest: memotestState, wallet } = useSelector(
+    (state: RootState) => state
   );
 
-  const room = memotestState.currentRoom as {
-    details: IGameRoom;
-    players: IPlayer[];
-  };
+  const room = memotestState.currentRoom as ICurrentRoom;
 
-  // TODO change this to define a random player to start game
-  const [currentPlayer, setCurrentPlayer] = useState<IPlayer>(
-    room.players[0]
-  );
+  const [currentPlayer, setCurrentPlayer] = useState<IPlayer>();
+  const [thisPlayer, setThisPlayer] = useState<IPlayer>();
 
   const onRevealCard = useCallback((position: number) => {
-    // TODO: Get card img & id and remove fakeIds arr
-
     const cardData: ICard = {
-      id: `${
-        position < _fakeIds.length
-          ? _fakeIds[position]
-          : _fakeIds[position - _fakeIds.length]
-      }`,
+      id: "",
       image: "",
       position,
       revealed: true,
+      perPosition: "",
     };
 
     setCardsRevealed((state) => {
@@ -81,9 +80,9 @@ export const useMemotest = (memotestTable: ICard[]) => {
       setCardsRevealed((state) => {
         const newState = [...state];
         newState[card1.position].revealedByPlayer =
-          currentPlayer.walletAddress;
+          currentPlayer?.walletAddress;
         newState[card2.position].revealedByPlayer =
-          currentPlayer.walletAddress;
+          currentPlayer?.walletAddress;
         return newState;
       });
     } else {
@@ -96,24 +95,35 @@ export const useMemotest = (memotestTable: ICard[]) => {
         });
       }, 1800);
     }
-  }, [setCardsRevealed, currentPlayer, turn]);
+  }, [currentPlayer, turn]);
+
+  // Init currentPlayer
+  useEffect(() => {
+    setCurrentPlayer(
+      memotestState.currentRoom?.players.find(
+        (p) => p.playerTableID === 1
+      )
+    );
+    setThisPlayer(
+      memotestState.currentRoom?.players.find(
+        (p) => p.walletAddress === wallet.walletAddress
+      )
+    );
+  }, [memotestState.currentRoom?.players, wallet.walletAddress]);
 
   // Game logic
   useEffect(() => {
     if (turn.flippedCardsAmount < 2) return;
-
     comproveFlippedCards();
-
     goToNextTurn();
   }, [comproveFlippedCards, goToNextTurn, turn]);
 
   // Change player turn
   useEffect(() => {
     if (turn.status !== "finished") return;
-
     setCurrentPlayer((player) => {
       const players = room.players as IPlayer[];
-      const playerIdx = players.indexOf(player);
+      const playerIdx = players.indexOf(player as IPlayer);
       if (playerIdx < players.length - 1)
         return players[playerIdx + 1];
       else if (playerIdx === players.length - 1) return players[0];
@@ -124,7 +134,9 @@ export const useMemotest = (memotestTable: ICard[]) => {
   return {
     turn,
     onRevealCard,
+    whoPlays: memotestState.currentRoom?.whoPlays,
     cardsRevealed,
+    thisPlayer,
     currentPlayer,
     players: room.players as IPlayer[],
   };

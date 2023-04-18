@@ -1,13 +1,14 @@
 import { GameStatus, GameType } from "@/enums";
 import { IPlayer } from "./Player";
 
+// roomCode -> roomId : gameBoardObjectId
 export interface IGameRoom {
-  id: string;
-  roomCode: string; // roomCode -> roomId : gameBoardObjectId
-  isPrivate: boolean;
-  owner: string;
+  gameboardObjectId: string;
   gameStatus: GameStatus;
+  isPrivate: boolean;
   type: GameType;
+  owner: string;
+  id: string;
 }
 
 export interface ICurrentRoom {

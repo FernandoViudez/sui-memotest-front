@@ -1,26 +1,28 @@
-import {
-  useContract,
-  useProvider,
-  useSocket,
-} from "@/hooks/memotest";
+import { useContract, useSocket } from "@/hooks/memotest";
 import { ICurrentRoom } from "@/interfaces/GameRoom";
 import { IPlayerJoined } from "@/interfaces/memotest/player.interface";
 import { AppDispatch, RootState } from "@/store";
 import { addPlayer } from "@/store/slices/memotest";
 import { SocketEventNames } from "@/types/memotest/socket-event-names.enum";
 import { Namespace } from "@/types/socket-namespaces.enum";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styles from "./LobbyView.module.css";
 
 export const LobbyView = () => {
-  const { currentRoom } = useSelector(
-    (state: RootState) => state.memotest
-  );
+  const {
+    memotest: { currentRoom },
+    wallet,
+  } = useSelector((state: RootState) => state);
   const dispatch = useDispatch<AppDispatch>();
-  const { getObjectById } = useProvider();
   const contract = useContract();
   const socket = useSocket(Namespace.memotest);
+  const enableStartGameBtn = useMemo(
+    () =>
+      (currentRoom as ICurrentRoom).players.length < 2 ||
+      currentRoom?.details.owner !== wallet.walletAddress,
+    [currentRoom, wallet]
+  );
 
   const onPlayerJoined = useCallback(
     (data: IPlayerJoined) => dispatch(addPlayer(data)),
@@ -35,11 +37,10 @@ export const LobbyView = () => {
   });
 
   const startGame = async () => {
-    if ((currentRoom as ICurrentRoom).players.length < 2) {
-      return;
-    }
+    if (enableStartGameBtn) return;
+
     await contract.startGame(
-      currentRoom?.details.roomCode.split(":")[1] as string
+      currentRoom?.details.gameboardObjectId as string
     );
     socket.emit(SocketEventNames.startGame, {});
   };
@@ -59,12 +60,12 @@ export const LobbyView = () => {
               </strong>
               <div className="d-flex justify-content-center align-items-center">
                 <span className="text-light">
-                  {currentRoom?.details.roomCode.slice(0, 10) + "..."}
+                  {currentRoom?.details.id + "..."}
                 </span>
                 <span
                   onClick={() =>
                     navigator.clipboard.writeText(
-                      currentRoom?.details.roomCode as string
+                      `${currentRoom?.details.id}:${currentRoom?.details.gameboardObjectId}`
                     )
                   }
                   className={`text-primary mx-2 ${styles.cursorPointer}`}
@@ -93,7 +94,7 @@ export const LobbyView = () => {
           ))}
         </ul>
         <button
-          disabled={(currentRoom as ICurrentRoom).players.length < 2}
+          disabled={enableStartGameBtn}
           onClick={startGame}
           className="btn btn-primary w-50 m-auto mt-3 mb-1"
         >
