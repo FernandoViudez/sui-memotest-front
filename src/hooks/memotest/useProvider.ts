@@ -78,7 +78,7 @@ export const useProvider = () => {
 
   return {
     provider: localProvider,
-    getObjectById, // NOTE llamar para obtener el room
+    getObjectById,
     getMyCoins,
     getSignatureForSockets,
     getPublicKeyForSockets,

@@ -48,7 +48,7 @@ export const Lobby = () => {
 
       {RoomStatus === "room-list" && (
         <RoomList
-          onJoinRoom={onSetLobbyReady}
+          onSelectRoom={onSetLobbyReady}
           onJoinPrivateRoom={onJoinPrivateRoom}
         />
       )}

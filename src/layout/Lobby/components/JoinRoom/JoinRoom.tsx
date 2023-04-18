@@ -1,6 +1,4 @@
-import { RootState } from "@/store";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { useSelector } from "react-redux";
 import { useJoinRoom } from "../../../../hooks/memotest/useJoinRoom";
 
 interface IJoinRoomForm {
@@ -8,12 +6,11 @@ interface IJoinRoomForm {
   bet: number;
 }
 
-export const JoinRoom = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
-  const {
-    memotest: { publicRooms },
-    wallet: { walletAddress, name },
-  } = useSelector((state: RootState) => state);
-
+export const JoinRoom = ({
+  onJoinRoom,
+}: {
+  onJoinRoom: () => void;
+}) => {
   const { joinRoom } = useJoinRoom({ onJoinRoom });
 
   const onSubmit: SubmitHandler<IJoinRoomForm> = async (form) => {

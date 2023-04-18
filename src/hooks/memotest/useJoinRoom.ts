@@ -9,11 +9,18 @@ import { useCallback, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useContract, useProvider, useSocket } from "./index";
 
-export const useJoinRoom = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
+export const useJoinRoom = ({
+  onJoinRoom,
+}: {
+  onJoinRoom: () => void;
+}) => {
   const [roomCode, setRoomCode] = useState("");
   const dispatch = useDispatch<AppDispatch>();
-  const { getPublicKeyForSockets, getSignatureForSockets, getObjectById } =
-    useProvider();
+  const {
+    getPublicKeyForSockets,
+    getSignatureForSockets,
+    getObjectById,
+  } = useProvider();
   const socket = useSocket(Namespace.memotest);
   const contractService = useContract();
 
@@ -40,7 +47,9 @@ export const useJoinRoom = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
     setRoomCode(roomCode);
     const [roomId, gameId] = roomCode.split(":");
     const bet = await getObjectById<IGameBoard>(gameId);
-    const signature = await getSignatureForSockets(socket.clientId as string);
+    const signature = await getSignatureForSockets(
+      socket.clientId as string
+    );
     await contractService.joinRoom(
       gameId,
       bet.data.config.fields.minimum_bet_amount as number

@@ -9,6 +9,7 @@ export interface IGameRoom {
   type: GameType;
   owner: string;
   id: string;
+  playersInRoom?: number;
 }
 
 export interface ICurrentRoom {

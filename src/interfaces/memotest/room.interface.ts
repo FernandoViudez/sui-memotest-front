@@ -21,3 +21,12 @@ export interface IRoomCreated {
   status: string;
   isPrivate: boolean;
 }
+
+export interface IRoomResponse {
+  id: string;
+  code: string;
+  owner: string;
+  status: string;
+  isPrivate: boolean;
+  playersInRoom: number;
+}
