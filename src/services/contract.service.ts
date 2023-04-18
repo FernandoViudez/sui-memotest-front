@@ -1,6 +1,7 @@
 import { TransactionBlock } from "@mysten/sui.js";
 import { WalletContextState } from "@suiet/wallet-kit";
 import { environment } from "../environment/enviornment";
+import { provider } from "./sui-provider.service";
 
 export class MemotestContract {
   constructor(private readonly wallet: WalletContextState) {}
@@ -14,6 +15,14 @@ export class MemotestContract {
     };
   }
 
+  private async setBudget() {
+    const { totalBalance } = await provider.getBalance({
+      owner: this.wallet.address as string,
+      coinType: "0x2::sui::SUI",
+    });
+    return Number(totalBalance) / 2;
+  }
+
   async createGame(balanceToBet: number): Promise<string> {
     const { tx, coin } = await this.splitCoin(balanceToBet);
     tx.moveCall({
@@ -21,8 +30,7 @@ export class MemotestContract {
       arguments: [tx.pure(environment.memotest.config), coin],
     });
     tx.transferObjects([coin], tx.pure(this.wallet.address));
-    // TODO: research how to assign dynamic gas budget
-    tx.setGasBudget(9000000);
+    tx.setGasBudget(await this.setBudget());
     const res = await this.wallet.signAndExecuteTransactionBlock({
       transactionBlock: tx as any,
       options: {
@@ -42,7 +50,7 @@ export class MemotestContract {
       arguments: [tx.pure(gameBoard), coin],
     });
     tx.transferObjects([coin], tx.pure(this.wallet.address));
-    tx.setGasBudget(9000000);
+    tx.setGasBudget(await this.setBudget());
     const res = await this.wallet.signAndExecuteTransactionBlock({
       transactionBlock: tx as any,
     });
@@ -55,7 +63,7 @@ export class MemotestContract {
       target: `${environment.memotest.package}::memotest::start_game`,
       arguments: [tx.pure(gameBoard)],
     });
-    tx.setGasBudget(9000000);
+    tx.setGasBudget(await this.setBudget());
     const res = await this.wallet.signAndExecuteTransactionBlock({
       transactionBlock: tx as any,
       options: {
@@ -73,13 +81,9 @@ export class MemotestContract {
     const tx = new TransactionBlock();
     tx.moveCall({
       target: `${environment.memotest.config}::memotest::turn_card_over`,
-      arguments: [
-        tx.pure(gameBoard),
-        tx.pure(cardId),
-        tx.pure(cardsLocation),
-      ],
+      arguments: [tx.pure(gameBoard), tx.pure(cardId), tx.pure(cardsLocation)],
     });
-    tx.setGasBudget(10000);
+    tx.setGasBudget(await this.setBudget());
     const res = await this.wallet.signAndExecuteTransactionBlock({
       transactionBlock: tx as any,
       options: {

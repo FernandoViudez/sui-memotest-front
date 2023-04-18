@@ -3,6 +3,10 @@ import { ICurrentRoom, IGameRoom } from "@/interfaces/GameRoom";
 import { IGameBoard } from "@/interfaces/memotest/game-board.interface";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { IPlayer } from "./../../../interfaces/Player";
+import {
+  IPlayerJoined,
+  IPlayerLeft,
+} from "../../../interfaces/memotest/player.interface";
 
 type MemotestSlice = {
   publicRooms: IGameRoom[];
@@ -41,8 +45,7 @@ export const gameSlice = createSlice({
         players: gameBoard.players.map((p) => ({
           walletAddress: p.fields.addr,
           playerTableID: Number(p.fields.id),
-          isCurrentPlayer:
-            gameBoard.who_plays === Number(p.fields.id),
+          isCurrentPlayer: gameBoard.who_plays === Number(p.fields.id),
         })),
         whoPlays: gameBoard.who_plays,
       };
@@ -79,21 +82,26 @@ export const gameSlice = createSlice({
         ],
       };
     },
-    addPlayer: (state, action: PayloadAction<IPlayer>) => {
+    addPlayer: (state, action: PayloadAction<IPlayerJoined>) => {
       state.currentRoom?.players.push({
-        walletAddress: action.payload?.walletAddress?.length
-          ? action.payload.walletAddress
+        walletAddress: action.payload?.address?.length
+          ? action.payload.address
           : "unset",
       });
+    },
+    removePlayer: (state, action: PayloadAction<IPlayerLeft>) => {
+      const idx = state.currentRoom?.players.findIndex(
+        (player) => player.walletAddress == action.payload.address
+      );
+      if (idx != undefined && idx >= 0) {
+        state.currentRoom?.players.splice(idx, 1);
+      }
     },
     playersReady: (state) => {
       if (state.currentRoom?.details)
         state.currentRoom.details.gameStatus = GameStatus.Playing;
     },
-    changeGameState: (
-      state,
-      action: PayloadAction<{ status: GameStatus }>
-    ) => {
+    changeGameState: (state, action: PayloadAction<{ status: GameStatus }>) => {
       if (state.currentRoom) {
         return {
           ...state,
@@ -121,6 +129,7 @@ export const {
   changeGameState,
   enterRoom,
   addPlayer,
+  removePlayer,
   createRoom,
   playersReady,
   setRooms,

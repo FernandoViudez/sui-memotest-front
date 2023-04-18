@@ -8,11 +8,7 @@ interface IJoinRoomForm {
   bet: number;
 }
 
-export const JoinRoom = ({
-  onJoinRoom,
-}: {
-  onJoinRoom: () => void;
-}) => {
+export const JoinRoom = ({ onJoinRoom }: { onJoinRoom: () => void }) => {
   const {
     memotest: { publicRooms },
     wallet: { walletAddress, name },
@@ -21,7 +17,7 @@ export const JoinRoom = ({
   const { joinRoom } = useJoinRoom({ onJoinRoom });
 
   const onSubmit: SubmitHandler<IJoinRoomForm> = async (form) => {
-    await joinRoom(form.roomCode, 100); // TODO Change
+    await joinRoom(form.roomCode);
   };
 
   const {

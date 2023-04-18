@@ -20,7 +20,7 @@ class SocketService {
   listen<T>(eventName: string, callback: (data: T) => void) {
     this.socket?.on(eventName, callback);
   }
-  emit<T>(eventName: string, data: T) {
+  emit<T>(eventName: string, data?: T) {
     this.socket?.emit(eventName, data);
   }
   off(eventName: string, callback: (data: any) => void) {
