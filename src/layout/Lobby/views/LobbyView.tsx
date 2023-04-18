@@ -1,8 +1,11 @@
 import { useContract, useSocket } from "@/hooks/memotest";
 import { ICurrentRoom } from "@/interfaces/GameRoom";
-import { IPlayerJoined } from "@/interfaces/memotest/player.interface";
+import {
+  IPlayerJoined,
+  IPlayerLeft,
+} from "@/interfaces/memotest/player.interface";
 import { AppDispatch, RootState } from "@/store";
-import { addPlayer } from "@/store/slices/memotest";
+import { addPlayer, removePlayer } from "@/store/slices/memotest";
 import { SocketEventNames } from "@/types/memotest/socket-event-names.enum";
 import { Namespace } from "@/types/socket-namespaces.enum";
 import { useCallback, useEffect, useMemo } from "react";
@@ -17,11 +20,15 @@ export const LobbyView = () => {
   const dispatch = useDispatch<AppDispatch>();
   const contract = useContract();
   const socket = useSocket(Namespace.memotest);
-  const enableStartGameBtn = useMemo(
-    () =>
-      (currentRoom as ICurrentRoom).players.length < 2 ||
-      currentRoom?.details.owner !== wallet.walletAddress,
+
+  const showStartGameBtn = useMemo(
+    () => currentRoom?.details.owner !== wallet.walletAddress,
     [currentRoom, wallet]
+  );
+
+  const enableStartGameBtn = useMemo(
+    () => (currentRoom as ICurrentRoom).players.length < 2,
+    [currentRoom]
   );
 
   const onPlayerJoined = useCallback(
@@ -29,10 +36,18 @@ export const LobbyView = () => {
     [dispatch]
   );
 
+  // TODO: get gameBoard status and check if finished. if finished then enable claim btn for the remaining player to withdraw his betted amount.
+  const onPlayerLeft = useCallback(
+    (data: IPlayerLeft) => dispatch(removePlayer(data)),
+    [dispatch]
+  );
+
   useEffect(() => {
     socket.listen(SocketEventNames.onPlayerJoined, onPlayerJoined);
+    socket.listen(SocketEventNames.onPlayerLeft, onPlayerLeft);
     return () => {
       socket.off(SocketEventNames.onPlayerJoined, onPlayerJoined);
+      socket.off(SocketEventNames.onPlayerLeft, onPlayerLeft);
     };
   });
 
@@ -42,7 +57,7 @@ export const LobbyView = () => {
     await contract.startGame(
       currentRoom?.details.gameboardObjectId as string
     );
-    socket.emit(SocketEventNames.startGame, {});
+    socket.emit(SocketEventNames.startGame);
   };
 
   return (
@@ -80,7 +95,13 @@ export const LobbyView = () => {
           {currentRoom?.players.map((p, index) => (
             <li
               key={index}
-              className={`list-group-item mb-1 text-white ${styles.listGroupItem}`}
+              className={`list-group-item mb-1 text-white ${
+                styles.listGroupItem
+              } ${
+                p.walletAddress === wallet.walletAddress
+                  ? "bg-light"
+                  : ""
+              }`}
             >
               <div className="d-flex justify-content-between">
                 <strong className="text-capitalize text-secondary">
@@ -93,13 +114,19 @@ export const LobbyView = () => {
             </li>
           ))}
         </ul>
-        <button
-          disabled={enableStartGameBtn}
-          onClick={startGame}
-          className="btn btn-primary w-50 m-auto mt-3 mb-1"
-        >
-          Start Game
-        </button>
+        {showStartGameBtn ? (
+          <></>
+        ) : (
+          <button
+            disabled={
+              (currentRoom as ICurrentRoom).players.length < 2
+            }
+            onClick={startGame}
+            className="btn btn-primary w-50 m-auto mt-3 mb-1"
+          >
+            Start Game
+          </button>
+        )}
       </div>
     </article>
   );
