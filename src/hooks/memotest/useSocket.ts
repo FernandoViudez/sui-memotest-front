@@ -9,7 +9,7 @@ export const useSocket = (namespace: Namespace) => {
     if (reactiveSocket.connected) return;
     socket.connect(namespace);
     socket.listen("connect", onSocketConnected);
-  }, []);
+  }, [namespace, reactiveSocket.connected]);
 
   function onSocketConnected() {
     console.log("connected ~> ", socket.clientId);

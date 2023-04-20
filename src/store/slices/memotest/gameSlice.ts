@@ -2,11 +2,11 @@ import { GameStatus, GameType } from "@/enums";
 import { ICurrentRoom, IGameRoom } from "@/interfaces/GameRoom";
 import { IGameBoard } from "@/interfaces/memotest/game-board.interface";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import { IPlayer } from "./../../../interfaces/Player";
 import {
   IPlayerJoined,
   IPlayerLeft,
 } from "../../../interfaces/memotest/player.interface";
+import { IPlayer } from "./../../../interfaces/Player";
 
 type MemotestSlice = {
   publicRooms: IGameRoom[];
@@ -34,6 +34,8 @@ export const gameSlice = createSlice({
       }>
     ) => {
       const [id, gameboardObjectId] = roomCode.split(":");
+      console.log("ENTER ROOM REDUCER");
+      console.log(gameBoard);
       state.currentRoom = {
         details: {
           id,
@@ -46,7 +48,8 @@ export const gameSlice = createSlice({
         players: gameBoard.players.map((p) => ({
           walletAddress: p.fields.addr,
           playerTableID: Number(p.fields.id),
-          isCurrentPlayer: gameBoard.who_plays === Number(p.fields.id),
+          isCurrentPlayer:
+            gameBoard.who_plays === Number(p.fields.id),
         })),
         whoPlays: gameBoard.who_plays,
       };
@@ -90,6 +93,8 @@ export const gameSlice = createSlice({
         walletAddress: action.payload?.address?.length
           ? action.payload.address
           : "unset",
+        playerTableID: action.payload.id,
+        isCurrentPlayer: false,
       });
     },
     removePlayer: (state, action: PayloadAction<IPlayerLeft>) => {
@@ -104,7 +109,34 @@ export const gameSlice = createSlice({
       if (state.currentRoom?.details)
         state.currentRoom.details.gameStatus = GameStatus.Playing;
     },
-    changeGameState: (state, action: PayloadAction<{ status: GameStatus }>) => {
+    setPlayerTurn: (
+      state,
+      action: PayloadAction<{ playerId: number }>
+    ) => {
+      return {
+        ...state,
+        currentRoom: {
+          ...(state.currentRoom as any),
+          players: state.currentRoom?.players.map((p) => {
+            if (p.playerTableID === action.payload.playerId) {
+              return {
+                ...p,
+                isCurrentPlayer: true,
+              };
+            }
+            return {
+              ...p,
+              isCurrentPlayer: false,
+            };
+          }),
+          whoPlays: action.payload.playerId,
+        },
+      };
+    },
+    changeGameState: (
+      state,
+      action: PayloadAction<{ status: GameStatus }>
+    ) => {
       if (state.currentRoom) {
         return {
           ...state,
@@ -132,6 +164,7 @@ export const {
   changeGameState,
   enterRoom,
   addPlayer,
+  setPlayerTurn,
   removePlayer,
   createRoom,
   playersReady,

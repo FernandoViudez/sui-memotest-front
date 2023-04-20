@@ -4,20 +4,20 @@ import { useSocket } from "@/hooks/memotest";
 import { useProtectRoutes } from "@/hooks/useProtectRoutes/useProtectRoutes";
 import { SocketError } from "@/interfaces/socket-error.interface";
 import { Lobby } from "@/layout/Lobby";
-import { AppDispatch, RootState } from "@/store";
-import { changeGameState } from "@/store/slices/memotest";
+import { RootState } from "@/store";
 import { SocketEventNames } from "@/types/memotest/socket-event-names.enum";
 import { Namespace } from "@/types/socket-namespaces.enum";
 import Head from "next/head";
 import { useCallback, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import styles from "./Memotest.module.css";
 
 export default function Memotest() {
   const { currentRoom } = useSelector(
     (state: RootState) => state.memotest
   );
-  const dispatch = useDispatch<AppDispatch>();
+  // const [canRenderMemotest, setCanRenderMemotest] = useState(false);
+  // const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated } = useProtectRoutes("/memotest", () => {
     // TODO Remove
     console.log("not authenticated");
@@ -35,18 +35,26 @@ export default function Memotest() {
     };
   }, [handleError, socket]);
 
-  const handleGameStatus = useCallback(async () => {
-    console.log("Game Started");
-    dispatch(changeGameState({ status: GameStatus.Playing }));
-  }, [dispatch]);
+  // const handleGameStatus = useCallback(() => {
+  //   console.log("Game Started");
+  //   dispatch(changeGameState({ status: GameStatus.Playing }));
+  // }, [dispatch]);
 
-  useEffect(() => {
-    console.log("RENDER");
-    socket.listen(SocketEventNames.onGameStarted, handleGameStatus);
-    return () => {
-      socket.off(SocketEventNames.onGameStarted, handleGameStatus);
-    };
-  }, [handleGameStatus, socket]);
+  // useEffect(() => {
+  //   socket.listen(SocketEventNames.onGameStarted, handleGameStatus);
+  //   return () => {
+  //     socket.off(SocketEventNames.onGameStarted, handleGameStatus);
+  //   };
+  // }, [handleGameStatus, socket]);
+
+  // useEffect(() => {
+  //   setCanRenderMemotest(
+  //     !!(
+  //       currentRoom &&
+  //       currentRoom.details.gameStatus === GameStatus.Playing
+  //     )
+  //   );
+  // }, [currentRoom]);
 
   return (
     isAuthenticated() && (

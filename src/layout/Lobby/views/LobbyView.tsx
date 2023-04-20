@@ -1,3 +1,4 @@
+import { GameStatus } from "@/enums";
 import { useContract, useSocket } from "@/hooks/memotest";
 import { ICurrentRoom } from "@/interfaces/GameRoom";
 import {
@@ -5,7 +6,11 @@ import {
   IPlayerLeft,
 } from "@/interfaces/memotest/player.interface";
 import { AppDispatch, RootState } from "@/store";
-import { addPlayer, removePlayer } from "@/store/slices/memotest";
+import {
+  addPlayer,
+  changeGameState,
+  removePlayer,
+} from "@/store/slices/memotest";
 import { SocketEventNames } from "@/types/memotest/socket-event-names.enum";
 import { Namespace } from "@/types/socket-namespaces.enum";
 import { useCallback, useEffect, useMemo } from "react";
@@ -31,6 +36,11 @@ export const LobbyView = () => {
     [currentRoom]
   );
 
+  const handleGameStatus = useCallback(() => {
+    console.log("Game Started");
+    dispatch(changeGameState({ status: GameStatus.Playing }));
+  }, [dispatch]);
+
   const onPlayerJoined = useCallback(
     (data: IPlayerJoined) => dispatch(addPlayer(data)),
     [dispatch]
@@ -51,9 +61,15 @@ export const LobbyView = () => {
     };
   });
 
+  useEffect(() => {
+    socket.listen(SocketEventNames.onGameStarted, handleGameStatus);
+    return () => {
+      socket.off(SocketEventNames.onGameStarted, handleGameStatus);
+    };
+  }, [handleGameStatus, socket]);
+
   const startGame = async () => {
     if (enableStartGameBtn) return;
-
     await contract.startGame(
       currentRoom?.details.gameboardObjectId as string
     );
@@ -95,16 +111,16 @@ export const LobbyView = () => {
           {currentRoom?.players.map((p, index) => (
             <li
               key={index}
-              className={`list-group-item mb-1 text-white ${
-                styles.listGroupItem
-              } ${
-                p.walletAddress === wallet.walletAddress
-                  ? "bg-light"
-                  : ""
-              }`}
+              className={`list-group-item mb-1 text-white ${styles.listGroupItem} `}
             >
               <div className="d-flex justify-content-between">
-                <strong className="text-capitalize text-secondary">
+                <strong
+                  className={`text-capitalize text-secondary ${
+                    p.walletAddress === wallet.walletAddress
+                      ? "text-success"
+                      : ""
+                  }`}
+                >
                   {p.name || "Player " + (index + 1)}
                 </strong>
                 <small className="form-text text-muted">
