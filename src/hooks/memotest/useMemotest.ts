@@ -65,22 +65,9 @@ export const useMemotest = () => {
 
   const onRevealCard = useCallback(
     (position: number) => {
-      console.log("CLICK POSITION", position);
-      console.log("ALTERED POSITION FOR BACK", {
-        position: position + 1,
-      });
       socket.emit(SocketEventNames.turnOverCard, {
         position: position + 1,
       } as ISocket.ITurnOverCard);
-
-      // setCardsRevealed((state) => {
-      //   const newState = [...state];
-      //   newState[position] = {
-      //     ...newState[position],
-      //     clicked: true,
-      //   };
-      //   return newState;
-      // });
     },
     [socket]
   );
@@ -121,36 +108,6 @@ export const useMemotest = () => {
     },
     []
   );
-
-  // const handleRevealCard = useCallback(
-  //   ({ position, image, id }: ISocket.ICardTurnedOver) => {
-  //     console.log("on reveal ", {
-  //       position,
-  //       image,
-  //       id,
-  //     });
-
-  //     let cardData!: ICard;
-
-  //     setCardsRevealed((state) => {
-  //       return state.map((c) => {
-  //         if (c.position === position) {
-  //           cardData = {
-  //             revealed: true,
-  //             position,
-  //             image,
-  //             id,
-  //             perPosition: c.perPosition,
-  //             revealedByPlayer: c.revealedByPlayer,
-  //           };
-  //           return cardData;
-  //         }
-  //         return c;
-  //       });
-  //     });
-  //   },
-  //   []
-  // );
 
   const goToNextTurn = useCallback(
     (resp: any) => {
@@ -228,20 +185,10 @@ export const useMemotest = () => {
     room,
   ]);
 
-  // Listen socket messages
-
-  // useEffect(() => {
-  //   socket.listen(SocketEventNames.onCardSelected, handleSelectCard);
-  //   return () => {
-  //     socket.off(SocketEventNames.onCardSelected, handleSelectCard);
-  //   };
-  // }, [handleSelectCard, socket]);
-
   useEffect(() => {
     socket.listen(
       SocketEventNames.onCardTurnedOver,
       handleSelectCard
-      // handleSelectCard
     );
     return () => {
       socket.off(SocketEventNames.onCardTurnedOver, handleSelectCard);
@@ -321,13 +268,13 @@ export const useMemotest = () => {
           winners.push(playersScore[i]);
         }
       }
-
-      if (playersScore.length === 1) {
+      if (winners.length === 1) {
         dispatch(
           setGameFinished({
             matchStatus: {
               status: "victory",
               winners: [winners[0]],
+              players: playersScore,
             },
           })
         );
@@ -337,6 +284,7 @@ export const useMemotest = () => {
             matchStatus: {
               status: "withdraw",
               winners: winners,
+              players: playersScore,
             },
           })
         );
@@ -345,6 +293,7 @@ export const useMemotest = () => {
 
     fn();
   }, [
+    cardsRevealed, // NOTE CHECK
     dispatch,
     getObjectById,
     room.details.gameboardObjectId,
@@ -355,14 +304,41 @@ export const useMemotest = () => {
   // On player left
   const onPlayerLeft = useCallback(
     async (data: IPlayerLeft) => {
-      const response = await getObjectById<IGameBoard>(
+      const {
+        data: { who_plays, cards_found },
+      } = await getObjectById<IGameBoard>(
         room.details.gameboardObjectId
       );
-
-      dispatch(removePlayer(data));
-      dispatch(setPlayerTurn({ playerId: response.data.who_plays }));
+      if (cards_found < 8) {
+        dispatch(removePlayer(data));
+        dispatch(setPlayerTurn({ playerId: who_plays }));
+      } else {
+        dispatch(
+          setGameFinished({
+            matchStatus: {
+              status: "victory",
+              winners: [
+                {
+                  cardsRevealed: cardsRevealed.filter(
+                    (c) =>
+                      c?.revealedByPlayer === wallet.walletAddress
+                  )?.length,
+                  walletAddress: wallet.walletAddress,
+                },
+              ],
+              players: [],
+            },
+          })
+        );
+      }
     },
-    [dispatch, getObjectById, room.details.gameboardObjectId]
+    [
+      room.details.gameboardObjectId,
+      wallet.walletAddress,
+      getObjectById,
+      cardsRevealed, // NOTE CHECK
+      dispatch,
+    ]
   );
 
   useEffect(() => {

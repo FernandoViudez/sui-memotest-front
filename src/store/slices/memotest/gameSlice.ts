@@ -34,8 +34,6 @@ export const gameSlice = createSlice({
       }>
     ) => {
       const [id, gameboardObjectId] = roomCode.split(":");
-      console.log("ENTER ROOM REDUCER");
-      console.log(gameBoard);
       state.currentRoom = {
         details: {
           id,
@@ -162,6 +160,7 @@ export const gameSlice = createSlice({
         matchStatus: {
           status: "victory" | "withdraw";
           winners: { walletAddress: string; cardsRevealed: number }[];
+          players: { walletAddress: string; cardsRevealed: number }[];
         };
       }>
     ) => {
@@ -173,6 +172,9 @@ export const gameSlice = createSlice({
       state.publicRooms = action.payload;
     },
     exitRoom: (state) => {
+      state.currentRoom = null;
+    },
+    removeRoom: (state) => {
       state.currentRoom = null;
     },
   },
@@ -189,4 +191,5 @@ export const {
   setGameFinished,
   setRooms,
   exitRoom,
+  removeRoom,
 } = gameSlice.actions;

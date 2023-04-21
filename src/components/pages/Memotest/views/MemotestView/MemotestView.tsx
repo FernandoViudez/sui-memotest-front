@@ -12,10 +12,6 @@ export const MemotestView = () => {
     turn,
   } = useMemotest();
 
-  const handleClaimProcess = () => {
-    console.log("CLaim process");
-  };
-
   return (
     <>
       <div className="row p-0 m-0 h-100">

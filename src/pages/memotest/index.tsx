@@ -37,23 +37,42 @@ export default function Memotest() {
     };
   }, [handleError, socket]);
 
-  return (
-    isAuthenticated() && (
+  if (!isAuthenticated()) return;
+
+  if (currentRoom?.details.gameStatus === GameStatus.Playing) {
+    return (
       <>
         <Head>
           <title>Memotest</title>
         </Head>
         <div className={`container p-3 ${styles.mainContainer}`}>
-          {currentRoom?.details.gameStatus === GameStatus.Playing ? (
-            <MemotestView />
-          ) : currentRoom?.details.gameStatus ===
-            GameStatus.Finished ? (
-            <GameFinishedView />
-          ) : (
-            <Lobby />
-          )}
+          <MemotestView />
         </div>
       </>
-    )
-  );
+    );
+  } else if (
+    currentRoom?.details.gameStatus === GameStatus.Finished
+  ) {
+    return (
+      <>
+        <Head>
+          <title>Memotest</title>
+        </Head>
+        <div className={`container p-3 ${styles.mainContainer}`}>
+          <GameFinishedView />
+        </div>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <Head>
+          <title>Memotest</title>
+        </Head>
+        <div className={`container p-3 ${styles.mainContainer}`}>
+          <Lobby />
+        </div>
+      </>
+    );
+  }
 }
