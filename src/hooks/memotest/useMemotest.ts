@@ -309,7 +309,9 @@ export const useMemotest = () => {
       } = await getObjectById<IGameBoard>(
         room.details.gameboardObjectId
       );
-      if (cards_found < 8) {
+
+      // room.players.length - 1 because the state neither the contract were updated yet  when this method is excecuted
+      if (cards_found < 8 && room.players.length - 1 > 1) {
         dispatch(removePlayer(data));
         dispatch(setPlayerTurn({ playerId: who_plays }));
       } else {
@@ -326,18 +328,27 @@ export const useMemotest = () => {
                   walletAddress: wallet.walletAddress,
                 },
               ],
-              players: [],
+              players: [
+                {
+                  cardsRevealed: cardsRevealed.filter(
+                    (c) =>
+                      c?.revealedByPlayer === wallet.walletAddress
+                  )?.length,
+                  walletAddress: wallet.walletAddress,
+                },
+              ],
             },
           })
         );
       }
     },
     [
-      room.details.gameboardObjectId,
-      wallet.walletAddress,
       getObjectById,
-      cardsRevealed, // NOTE CHECK
+      room.details.gameboardObjectId,
+      room.players, // NOTE: Check
+      cardsRevealed, // NOTE: Check
       dispatch,
+      wallet.walletAddress,
     ]
   );
 
