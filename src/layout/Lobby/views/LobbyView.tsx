@@ -114,18 +114,26 @@ export const LobbyView = () => {
               className={`list-group-item mb-1 text-white ${styles.listGroupItem} `}
             >
               <div className="d-flex justify-content-between">
-                <strong
-                  className={`text-capitalize text-secondary ${
-                    p.walletAddress === wallet.walletAddress
-                      ? "text-success"
-                      : ""
-                  }`}
-                >
-                  {p.name || "Player " + (index + 1)}
-                </strong>
-                <small className="form-text text-muted">
+                <strong className={`text-capitalize text-secondary`}>
                   {p.walletAddress.slice(0, 20) + "..."}
-                </small>
+                </strong>
+                {currentRoom?.details.owner ===
+                  wallet.walletAddress &&
+                wallet.walletAddress === p.walletAddress ? (
+                  <small className={"form-text text-info"}>
+                    Admin (me)
+                  </small>
+                ) : currentRoom?.details.owner === p.walletAddress ? (
+                  <small className={"form-text text-info"}>
+                    Admin
+                  </small>
+                ) : wallet.walletAddress === p.walletAddress ? (
+                  <small className={"form-text text-success"}>
+                    Me
+                  </small>
+                ) : (
+                  <small className={"form-text"}>Player</small>
+                )}
               </div>
             </li>
           ))}

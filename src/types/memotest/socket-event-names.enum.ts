@@ -4,6 +4,7 @@ export enum SocketEventNames {
   startGame = "start-game",
   getRooms = "get-rooms",
   turnOverCard = "turn-over-card",
+  requestTurnChange = "requestTurnChange",
   onError = "exception",
   onRoomCreated = "room-created",
   onPlayerJoined = "player-joined",

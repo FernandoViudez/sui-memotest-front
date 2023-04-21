@@ -96,12 +96,17 @@ export const gameSlice = createSlice({
         playerTableID: action.payload.id,
         isCurrentPlayer: false,
       });
+
+      state.currentRoom?.players.sort(
+        (a, b) =>
+          (a?.playerTableID as number) - (b?.playerTableID as number)
+      );
     },
     removePlayer: (state, action: PayloadAction<IPlayerLeft>) => {
       const idx = state.currentRoom?.players.findIndex(
-        (player) => player.walletAddress == action.payload.address
+        (player) => player.walletAddress === action.payload.address
       );
-      if (idx != undefined && idx >= 0) {
+      if (idx && idx >= 0) {
         state.currentRoom?.players.splice(idx, 1);
       }
     },
@@ -151,6 +156,19 @@ export const gameSlice = createSlice({
       }
       return state;
     },
+    setGameFinished: (
+      state,
+      action: PayloadAction<{
+        matchStatus: {
+          status: "victory" | "withdraw";
+          winners: { walletAddress: string; cardsRevealed: number }[];
+        };
+      }>
+    ) => {
+      if (!state.currentRoom) return;
+      state.currentRoom.details.gameStatus = GameStatus.Finished;
+      state.currentRoom.winner = action.payload.matchStatus;
+    },
     setRooms: (state, action: PayloadAction<IGameRoom[]>) => {
       state.publicRooms = action.payload;
     },
@@ -168,6 +186,7 @@ export const {
   removePlayer,
   createRoom,
   playersReady,
+  setGameFinished,
   setRooms,
   exitRoom,
 } = gameSlice.actions;

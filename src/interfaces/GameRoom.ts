@@ -16,4 +16,8 @@ export interface ICurrentRoom {
   details: IGameRoom;
   players: IPlayer[];
   whoPlays: number;
+  winner?: {
+    status: "victory" | "withdraw";
+    winners: { walletAddress: string; cardsRevealed: number }[];
+  };
 }

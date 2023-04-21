@@ -1,4 +1,7 @@
-import { MemotestView } from "@/components/pages/Memotest/views/MemotestView";
+import {
+  GameFinishedView,
+  MemotestView,
+} from "@/components/pages/Memotest/views";
 import { GameStatus } from "@/enums";
 import { useSocket } from "@/hooks/memotest";
 import { useProtectRoutes } from "@/hooks/useProtectRoutes/useProtectRoutes";
@@ -16,12 +19,11 @@ export default function Memotest() {
   const { currentRoom } = useSelector(
     (state: RootState) => state.memotest
   );
-  // const [canRenderMemotest, setCanRenderMemotest] = useState(false);
-  // const dispatch = useDispatch<AppDispatch>();
+
   const { isAuthenticated } = useProtectRoutes("/memotest", () => {
-    // TODO Remove
     console.log("not authenticated");
   });
+
   const socket = useSocket(Namespace.memotest);
 
   const handleError = useCallback((error: SocketError) => {
@@ -35,27 +37,6 @@ export default function Memotest() {
     };
   }, [handleError, socket]);
 
-  // const handleGameStatus = useCallback(() => {
-  //   console.log("Game Started");
-  //   dispatch(changeGameState({ status: GameStatus.Playing }));
-  // }, [dispatch]);
-
-  // useEffect(() => {
-  //   socket.listen(SocketEventNames.onGameStarted, handleGameStatus);
-  //   return () => {
-  //     socket.off(SocketEventNames.onGameStarted, handleGameStatus);
-  //   };
-  // }, [handleGameStatus, socket]);
-
-  // useEffect(() => {
-  //   setCanRenderMemotest(
-  //     !!(
-  //       currentRoom &&
-  //       currentRoom.details.gameStatus === GameStatus.Playing
-  //     )
-  //   );
-  // }, [currentRoom]);
-
   return (
     isAuthenticated() && (
       <>
@@ -65,6 +46,9 @@ export default function Memotest() {
         <div className={`container p-3 ${styles.mainContainer}`}>
           {currentRoom?.details.gameStatus === GameStatus.Playing ? (
             <MemotestView />
+          ) : currentRoom?.details.gameStatus ===
+            GameStatus.Finished ? (
+            <GameFinishedView />
           ) : (
             <Lobby />
           )}
