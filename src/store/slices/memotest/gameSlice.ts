@@ -2,11 +2,11 @@ import { GameStatus, GameType } from "@/enums";
 import { ICurrentRoom, IGameRoom } from "@/interfaces/GameRoom";
 import { IGameBoard } from "@/interfaces/memotest/game-board.interface";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import { IPlayer } from "./../../../interfaces/Player";
 import {
   IPlayerJoined,
   IPlayerLeft,
 } from "../../../interfaces/memotest/player.interface";
+import { IPlayer } from "./../../../interfaces/Player";
 
 type MemotestSlice = {
   publicRooms: IGameRoom[];
@@ -46,7 +46,8 @@ export const gameSlice = createSlice({
         players: gameBoard.players.map((p) => ({
           walletAddress: p.fields.addr,
           playerTableID: Number(p.fields.id),
-          isCurrentPlayer: gameBoard.who_plays === Number(p.fields.id),
+          isCurrentPlayer:
+            gameBoard.who_plays === Number(p.fields.id),
         })),
         whoPlays: gameBoard.who_plays,
       };
@@ -90,13 +91,20 @@ export const gameSlice = createSlice({
         walletAddress: action.payload?.address?.length
           ? action.payload.address
           : "unset",
+        playerTableID: action.payload.id,
+        isCurrentPlayer: false,
       });
+
+      state.currentRoom?.players.sort(
+        (a, b) =>
+          (a?.playerTableID as number) - (b?.playerTableID as number)
+      );
     },
     removePlayer: (state, action: PayloadAction<IPlayerLeft>) => {
       const idx = state.currentRoom?.players.findIndex(
-        (player) => player.walletAddress == action.payload.address
+        (player) => player.walletAddress === action.payload.address
       );
-      if (idx != undefined && idx >= 0) {
+      if (idx && idx >= 0) {
         state.currentRoom?.players.splice(idx, 1);
       }
     },
@@ -104,7 +112,34 @@ export const gameSlice = createSlice({
       if (state.currentRoom?.details)
         state.currentRoom.details.gameStatus = GameStatus.Playing;
     },
-    changeGameState: (state, action: PayloadAction<{ status: GameStatus }>) => {
+    setPlayerTurn: (
+      state,
+      action: PayloadAction<{ playerId: number }>
+    ) => {
+      return {
+        ...state,
+        currentRoom: {
+          ...(state.currentRoom as any),
+          players: state.currentRoom?.players.map((p) => {
+            if (p.playerTableID === action.payload.playerId) {
+              return {
+                ...p,
+                isCurrentPlayer: true,
+              };
+            }
+            return {
+              ...p,
+              isCurrentPlayer: false,
+            };
+          }),
+          whoPlays: action.payload.playerId,
+        },
+      };
+    },
+    changeGameState: (
+      state,
+      action: PayloadAction<{ status: GameStatus }>
+    ) => {
       if (state.currentRoom) {
         return {
           ...state,
@@ -119,10 +154,27 @@ export const gameSlice = createSlice({
       }
       return state;
     },
+    setGameFinished: (
+      state,
+      action: PayloadAction<{
+        matchStatus: {
+          status: "victory" | "withdraw";
+          winners: { walletAddress: string; cardsRevealed: number }[];
+          players: { walletAddress: string; cardsRevealed: number }[];
+        };
+      }>
+    ) => {
+      if (!state.currentRoom) return;
+      state.currentRoom.details.gameStatus = GameStatus.Finished;
+      state.currentRoom.winner = action.payload.matchStatus;
+    },
     setRooms: (state, action: PayloadAction<IGameRoom[]>) => {
       state.publicRooms = action.payload;
     },
     exitRoom: (state) => {
+      state.currentRoom = null;
+    },
+    removeRoom: (state) => {
       state.currentRoom = null;
     },
   },
@@ -132,9 +184,12 @@ export const {
   changeGameState,
   enterRoom,
   addPlayer,
+  setPlayerTurn,
   removePlayer,
   createRoom,
   playersReady,
+  setGameFinished,
   setRooms,
   exitRoom,
+  removeRoom,
 } = gameSlice.actions;

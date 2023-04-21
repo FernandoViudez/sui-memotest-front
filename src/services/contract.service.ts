@@ -80,8 +80,12 @@ export class MemotestContract {
   ) {
     const tx = new TransactionBlock();
     tx.moveCall({
-      target: `${environment.memotest.config}::memotest::turn_card_over`,
-      arguments: [tx.pure(gameBoard), tx.pure(cardId), tx.pure(cardsLocation)],
+      target: `${environment.memotest.package}::memotest::turn_card_over`,
+      arguments: [
+        tx.pure(gameBoard),
+        tx.pure(cardId),
+        tx.pure(cardsLocation),
+      ],
     });
     tx.setGasBudget(await this.setBudget());
     const res = await this.wallet.signAndExecuteTransactionBlock({

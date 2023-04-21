@@ -44,3 +44,9 @@ a {
   -webkit-backdrop-filter: blur(5px);
   border-radius: 1rem;
 }
+
+.disable-cursor {
+  pointer-events: none;
+  cursor: initial !important;
+  user-select: none;
+}

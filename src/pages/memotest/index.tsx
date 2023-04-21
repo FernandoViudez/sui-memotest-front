@@ -1,27 +1,29 @@
-import { MemotestView } from "@/components/pages/Memotest/views/MemotestView";
+import {
+  GameFinishedView,
+  MemotestView,
+} from "@/components/pages/Memotest/views";
 import { GameStatus } from "@/enums";
 import { useSocket } from "@/hooks/memotest";
 import { useProtectRoutes } from "@/hooks/useProtectRoutes/useProtectRoutes";
 import { SocketError } from "@/interfaces/socket-error.interface";
 import { Lobby } from "@/layout/Lobby";
-import { AppDispatch, RootState } from "@/store";
-import { changeGameState } from "@/store/slices/memotest";
+import { RootState } from "@/store";
 import { SocketEventNames } from "@/types/memotest/socket-event-names.enum";
 import { Namespace } from "@/types/socket-namespaces.enum";
 import Head from "next/head";
 import { useCallback, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import styles from "./Memotest.module.css";
 
 export default function Memotest() {
   const { currentRoom } = useSelector(
     (state: RootState) => state.memotest
   );
-  const dispatch = useDispatch<AppDispatch>();
+
   const { isAuthenticated } = useProtectRoutes("/memotest", () => {
-    // TODO Remove
     console.log("not authenticated");
   });
+
   const socket = useSocket(Namespace.memotest);
 
   const handleError = useCallback((error: SocketError) => {
@@ -35,33 +37,42 @@ export default function Memotest() {
     };
   }, [handleError, socket]);
 
-  const handleGameStatus = useCallback(async () => {
-    console.log("Game Started");
-    dispatch(changeGameState({ status: GameStatus.Playing }));
-  }, [dispatch]);
+  if (!isAuthenticated()) return;
 
-  useEffect(() => {
-    console.log("RENDER");
-    socket.listen(SocketEventNames.onGameStarted, handleGameStatus);
-    return () => {
-      socket.off(SocketEventNames.onGameStarted, handleGameStatus);
-    };
-  }, [handleGameStatus, socket]);
-
-  return (
-    isAuthenticated() && (
+  if (currentRoom?.details.gameStatus === GameStatus.Playing) {
+    return (
       <>
         <Head>
           <title>Memotest</title>
         </Head>
         <div className={`container p-3 ${styles.mainContainer}`}>
-          {currentRoom?.details.gameStatus === GameStatus.Playing ? (
-            <MemotestView />
-          ) : (
-            <Lobby />
-          )}
+          <MemotestView />
         </div>
       </>
-    )
-  );
+    );
+  } else if (
+    currentRoom?.details.gameStatus === GameStatus.Finished
+  ) {
+    return (
+      <>
+        <Head>
+          <title>Memotest</title>
+        </Head>
+        <div className={`container p-3 ${styles.mainContainer}`}>
+          <GameFinishedView />
+        </div>
+      </>
+    );
+  } else {
+    return (
+      <>
+        <Head>
+          <title>Memotest</title>
+        </Head>
+        <div className={`container p-3 ${styles.mainContainer}`}>
+          <Lobby />
+        </div>
+      </>
+    );
+  }
 }
