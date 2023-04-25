@@ -58,9 +58,6 @@ export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
             type="checkbox"
             {...register("isPrivate", { value: false })}
           />
-          <small className="form-text text-warning">
-            {errors?.bet && `The min value is ${minBetAmount}`}
-          </small>
         </div>
         <input
           disabled={isSubmitting}
