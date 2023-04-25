@@ -20,7 +20,7 @@ export class MemotestContract {
       owner: this.wallet.address as string,
       coinType: "0x2::sui::SUI",
     });
-    return Number(totalBalance) / 2;
+    return Number((Number(totalBalance) / 2).toString().split(".")[0]);
   }
 
   async createGame(balanceToBet: number): Promise<string> {
@@ -81,11 +81,7 @@ export class MemotestContract {
     const tx = new TransactionBlock();
     tx.moveCall({
       target: `${environment.memotest.package}::memotest::turn_card_over`,
-      arguments: [
-        tx.pure(gameBoard),
-        tx.pure(cardId),
-        tx.pure(cardsLocation),
-      ],
+      arguments: [tx.pure(gameBoard), tx.pure(cardId), tx.pure(cardsLocation)],
     });
     tx.setGasBudget(await this.setBudget());
     const res = await this.wallet.signAndExecuteTransactionBlock({
@@ -95,5 +91,21 @@ export class MemotestContract {
       },
     });
     console.log("[Turn Over Card]", res?.effects?.status);
+  }
+
+  async claimPrize(gameBoard: string) {
+    const tx = new TransactionBlock();
+    tx.moveCall({
+      target: `${environment.memotest.package}::memotest::claim_prize`,
+      arguments: [tx.pure(gameBoard)],
+    });
+    tx.setGasBudget(await this.setBudget());
+    const res = await this.wallet.signAndExecuteTransactionBlock({
+      transactionBlock: tx as any,
+      options: {
+        showEffects: true,
+      },
+    });
+    console.log("[Claim prize]", res?.effects?.status);
   }
 }

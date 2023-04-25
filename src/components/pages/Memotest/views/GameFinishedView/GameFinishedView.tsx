@@ -14,7 +14,7 @@ export const GameFinishedView = () => {
   const contract = useContract();
 
   const handleClaimProcess = async () => {
-    // await contract...
+    await contract.claimPrize(room.details.gameboardObjectId);
     dispatch(removeRoom());
   };
 
@@ -42,10 +42,7 @@ export const GameFinishedView = () => {
               <div className="w-75 d-flex flex-column align-items-center">
                 <p className="text-secondary mb-4 h5">Winner</p>
                 <p className="text-light mb-4">
-                  {room.winner?.winners[0].walletAddress.slice(
-                    0,
-                    10
-                  ) + "..."}
+                  {room.winner?.winners[0].walletAddress.slice(0, 10) + "..."}
                   {wallet.walletAddress ===
                     room.winner?.winners[0].walletAddress && (
                     <span className="mx-2 text-success">(Me)</span>
@@ -57,8 +54,7 @@ export const GameFinishedView = () => {
                   <span className="mx-2 text-success">
                     {
                       room.winner.players.find(
-                        (p) =>
-                          p.walletAddress === wallet.walletAddress
+                        (p) => p.walletAddress === wallet.walletAddress
                       )?.cardsRevealed
                     }
                   </span>
@@ -87,8 +83,7 @@ export const GameFinishedView = () => {
                   <span className="mx-2 text-success">
                     {
                       room.winner.players.find(
-                        (p) =>
-                          p.walletAddress === wallet.walletAddress
+                        (p) => p.walletAddress === wallet.walletAddress
                       )?.cardsRevealed
                     }
                   </span>
