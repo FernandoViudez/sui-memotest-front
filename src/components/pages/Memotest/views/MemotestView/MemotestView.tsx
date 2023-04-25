@@ -8,6 +8,8 @@ export const MemotestView = () => {
     cardsRevealed,
     room,
     thisPlayer,
+    timeByPlayer,
+    whoPlays,
     onRevealCard,
     turn,
   } = useMemotest();
@@ -16,8 +18,12 @@ export const MemotestView = () => {
     <>
       <div className="row p-0 m-0 h-100">
         <article className="col-2 d-flex flex-column justify-content-between align-items-center">
-          {player1 && <Player player={player1} />}
-          {player3 && <Player player={player3} />}
+          {player1 && (
+            <Player timeByPlayer={timeByPlayer} player={player1} />
+          )}
+          {player3 && (
+            <Player timeByPlayer={timeByPlayer} player={player3} />
+          )}
         </article>
         <article className="col p-0 ">
           {/* Memotest Container  & Layout */}
@@ -46,8 +52,12 @@ export const MemotestView = () => {
           </div>
         </article>
         <article className="col-2 d-flex flex-column justify-content-between align-items-center">
-          {player2 && <Player player={player2} />}
-          {player4 && <Player player={player4} />}
+          {player2 && (
+            <Player timeByPlayer={timeByPlayer} player={player2} />
+          )}
+          {player4 && (
+            <Player timeByPlayer={timeByPlayer} player={player4} />
+          )}
         </article>
       </div>
     </>

@@ -12,4 +12,5 @@ export interface ICardTurnedOver {
   position: number;
   image: string;
 }
+
 export interface ICardSelected extends ICardTurnedOver {}

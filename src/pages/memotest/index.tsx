@@ -27,7 +27,8 @@ export default function Memotest() {
   const socket = useSocket(Namespace.memotest);
 
   const handleError = useCallback((error: SocketError) => {
-    alert(JSON.stringify(error));
+    console.log(error);
+    // alert(JSON.stringify(error)); // TODO Restore
   }, []);
 
   useEffect(() => {
@@ -56,7 +57,7 @@ export default function Memotest() {
     return (
       <>
         <Head>
-          <title>Memotest</title>
+          <title>Game Finished</title>
         </Head>
         <div className={`container p-3 ${styles.mainContainer}`}>
           <GameFinishedView />
@@ -67,7 +68,7 @@ export default function Memotest() {
     return (
       <>
         <Head>
-          <title>Memotest</title>
+          <title>Lobby</title>
         </Head>
         <div className={`container p-3 ${styles.mainContainer}`}>
           <Lobby />
