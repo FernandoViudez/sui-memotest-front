@@ -9,6 +9,7 @@ interface ComponentProps {
   isFlipped: boolean;
   isDiscovered: boolean;
   cannotBeFlipped: boolean;
+  image: string;
   onRevealCard: (position: number) => void;
 }
 
@@ -16,6 +17,7 @@ const MemotestCardComponent = ({
   position,
   isFlipped,
   isDiscovered,
+  image,
   onRevealCard,
   cannotBeFlipped,
 }: ComponentProps) => {
@@ -37,9 +39,7 @@ const MemotestCardComponent = ({
   const setDisableCursorClass = useMemo(
     () =>
       `${styles.memotestCard} ${
-        isFlipped || cannotBeFlipped || isDiscovered
-          ? styles.disableCursor
-          : ""
+        isFlipped || cannotBeFlipped || isDiscovered ? styles.disableCursor : ""
       }`,
     [isFlipped, isDiscovered, cannotBeFlipped]
   );
@@ -53,7 +53,7 @@ const MemotestCardComponent = ({
         <div className={styles.cardBack}>
           <Image
             className={isDiscovered ? styles.revealedCard : ""}
-            src={placeholder}
+            src={image || placeholder}
             fill
             alt="back"
           />
