@@ -37,6 +37,7 @@ export const MemotestView = () => {
                   <MemotestCard
                     onRevealCard={onRevealCard}
                     position={i}
+                    image={c.image}
                     cannotBeFlipped={
                       !thisPlayer?.isCurrentPlayer ||
                       turn.status === "finished" ||
