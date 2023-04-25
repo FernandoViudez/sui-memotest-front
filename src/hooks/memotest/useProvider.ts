@@ -74,7 +74,7 @@ export const useProvider = () => {
   };
 
   const on = async <T>(
-    type: "CardTurnedOver" | "TurnChanged",
+    type: "CardTurnedOver" | "TurnChanged" | "CardsPerFound",
     cb: (args: T) => any
   ) => {
     const subscriptionId = await provider.subscribeEvent({

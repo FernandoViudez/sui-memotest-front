@@ -188,6 +188,7 @@ export const useMemotest = () => {
 
   useEffect(() => {
     on<ISocket.ICardTurnedOver>("CardTurnedOver", handleSelectCard);
+    on<ISocket.ICardTurnedOver>("CardsPerFound", console.log);
     socket.listen(SocketEventNames.onCardTurnedOver, handleSelectCard);
     return () => {
       socket.off(SocketEventNames.onCardTurnedOver, handleSelectCard);
