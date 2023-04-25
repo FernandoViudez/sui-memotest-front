@@ -10,13 +10,11 @@ interface ComponentProps {
   isFlipped: boolean;
   isDiscovered: boolean;
   cannotBeFlipped: boolean;
-  image: string;
   onRevealCard: (position: number) => void;
 }
 
 const MemotestCardComponent = ({
   position,
-  image,
   isFlipped,
   isDiscovered,
   image,
