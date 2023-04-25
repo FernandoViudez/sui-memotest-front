@@ -6,6 +6,7 @@ import styles from "./MemotestCard.module.css";
 
 interface ComponentProps {
   position: number;
+  image: string;
   isFlipped: boolean;
   isDiscovered: boolean;
   cannotBeFlipped: boolean;
@@ -15,6 +16,7 @@ interface ComponentProps {
 
 const MemotestCardComponent = ({
   position,
+  image,
   isFlipped,
   isDiscovered,
   image,
