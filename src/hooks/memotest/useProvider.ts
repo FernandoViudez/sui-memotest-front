@@ -1,14 +1,13 @@
 import { ProviderResponse } from "@/interfaces/ProviderResponse";
-import { JsonRpcProvider } from "@mysten/sui.js";
+import { JsonRpcProvider, SuiEvent } from "@mysten/sui.js";
 import { useWallet } from "@suiet/wallet-kit";
 import { useEffect, useState } from "react";
 import { provider } from "../../services/sui-provider.service";
+import { environment } from "../../environment/enviornment";
 
 export const useProvider = () => {
   const wallet = useWallet();
-  const [localProvider, setProvider] = useState(
-    {} as JsonRpcProvider
-  );
+  const [localProvider, setProvider] = useState({} as JsonRpcProvider);
 
   useEffect(() => {
     if (!wallet.connected) return;
@@ -63,17 +62,45 @@ export const useProvider = () => {
 
   const getSignatureForSockets = async (clientId: string) => {
     const { signature } = await wallet.signMessage({
-      message: new TextEncoder().encode(
-        wallet.address + ":" + clientId
-      ),
+      message: new TextEncoder().encode(wallet.address + ":" + clientId),
     });
     return signature;
   };
 
   const getPublicKeyForSockets = () => {
-    return Buffer.from(
-      wallet.account?.publicKey as Uint8Array
-    ).toString("base64");
+    return Buffer.from(wallet.account?.publicKey as Uint8Array).toString(
+      "base64"
+    );
+  };
+
+  const on = async <T>(
+    type: "CardTurnedOver" | "TurnChanged",
+    cb: (args: T) => any
+  ) => {
+    const subscriptionId = await provider.subscribeEvent({
+      filter: {
+        MoveModule: {
+          module: "memotest",
+          package: environment.memotest.package,
+        },
+      },
+      onMessage(event: SuiEvent) {
+        if (
+          event.type ==
+          environment.memotest.package + "::memotest::" + type
+        ) {
+          cb(event.parsedJson as T);
+        }
+      },
+    });
+    return subscriptionId;
+  };
+
+  const unsubscribe = async (subscriptionId: number) => {
+    if (!subscriptionId) return;
+    await provider.unsubscribeEvent({
+      id: subscriptionId,
+    });
   };
 
   return {
@@ -82,5 +109,7 @@ export const useProvider = () => {
     getMyCoins,
     getSignatureForSockets,
     getPublicKeyForSockets,
+    on,
+    unsubscribe,
   };
 };

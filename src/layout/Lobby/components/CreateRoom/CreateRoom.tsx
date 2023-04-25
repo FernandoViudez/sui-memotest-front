@@ -10,11 +10,7 @@ interface ICreateRoomForm {
   bet: number;
 }
 
-export const CreateRoom = ({
-  onCreateRoom,
-}: {
-  onCreateRoom: () => void;
-}) => {
+export const CreateRoom = ({ onCreateRoom }: { onCreateRoom: () => void }) => {
   const { walletAddress, name } = useSelector(
     (state: RootState) => state.wallet
   );
@@ -49,7 +45,6 @@ export const CreateRoom = ({
             {...register("bet", {
               min: minBetAmount,
               required: true,
-              value: 100,
             })}
           />
           <small className="form-text text-warning">
@@ -57,9 +52,7 @@ export const CreateRoom = ({
           </small>
         </div>
         <div className="mb-5 d-flex align-items-center justify-content-center">
-          <label className="m-0 form-label">
-            Create a private room
-          </label>
+          <label className="m-0 form-label">Create a private room</label>
           <input
             className={`form-checkbox mx-1 ${styles.inputStyles}`}
             type="checkbox"

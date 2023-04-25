@@ -20,7 +20,7 @@ export class MemotestContract {
       owner: this.wallet.address as string,
       coinType: "0x2::sui::SUI",
     });
-    return Number(totalBalance) / 2;
+    return Number((Number(totalBalance) / 2).toString().split(".")[0]);
   }
 
   async createGame(balanceToBet: number): Promise<string> {
