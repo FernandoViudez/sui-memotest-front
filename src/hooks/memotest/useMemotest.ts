@@ -114,7 +114,7 @@ export const useMemotest = () => {
         };
       });
     },
-    []
+    [getObjectById, room.details.gameboardObjectId]
   );
 
   const goToNextTurn = useCallback(async (resp: ITurnOnChain) => {
@@ -183,11 +183,12 @@ export const useMemotest = () => {
       // });
     }
   }, [
-    room.details.gameboardObjectId,
-    currentPlayer.walletAddress,
-    wallet.walletAddress,
     turn.flippedCards,
+    wallet.walletAddress,
+    currentPlayer.walletAddress,
+    socket,
     contract,
+    room.details.gameboardObjectId,
   ]);
 
   // Init currentPlayer
@@ -210,20 +211,30 @@ export const useMemotest = () => {
   ]);
 
   useEffect(() => {
-    on<ISocket.ICardTurnedOver>("CardTurnedOver", handleSelectCard);
-    on<ISocket.ICardTurnedOver>("CardsPerFound", console.log);
-    socket.listen(
-      SocketEventNames.onCardTurnedOver,
+    let cardTurnedOverSubs: number;
+    let cardsPerFoundSubs: number;
+    on<ISocket.ICardTurnedOver>(
+      "CardTurnedOver",
       handleSelectCard
+    ).then((id) => (cardTurnedOverSubs = id));
+    on<ISocket.ICardTurnedOver>("CardsPerFound", console.log).then(
+      (id) => (cardsPerFoundSubs = id)
     );
     return () => {
-      socket.off(SocketEventNames.onCardTurnedOver, handleSelectCard);
+      unsubscribe(cardTurnedOverSubs);
+      unsubscribe(cardsPerFoundSubs);
     };
-  }, []);
+  }, [handleSelectCard, on, unsubscribe]);
 
   useEffect(() => {
-    on<{ who_plays: number }>("TurnChanged", goToNextTurn);
-  }, []);
+    let turnChangedOverSubs: number;
+    on<ITurnOnChain>("TurnChanged", goToNextTurn).then(
+      (id) => (turnChangedOverSubs = id)
+    );
+    return () => {
+      unsubscribe(turnChangedOverSubs);
+    };
+  }, [goToNextTurn, on, unsubscribe]);
 
   /*
    * Game logic

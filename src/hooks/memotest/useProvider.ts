@@ -2,12 +2,14 @@ import { ProviderResponse } from "@/interfaces/ProviderResponse";
 import { JsonRpcProvider, SuiEvent } from "@mysten/sui.js";
 import { useWallet } from "@suiet/wallet-kit";
 import { useEffect, useState } from "react";
-import { provider } from "../../services/sui-provider.service";
 import { environment } from "../../environment/enviornment";
+import { provider } from "../../services/sui-provider.service";
 
 export const useProvider = () => {
   const wallet = useWallet();
-  const [localProvider, setProvider] = useState({} as JsonRpcProvider);
+  const [localProvider, setProvider] = useState(
+    {} as JsonRpcProvider
+  );
 
   useEffect(() => {
     if (!wallet.connected) return;
@@ -62,15 +64,17 @@ export const useProvider = () => {
 
   const getSignatureForSockets = async (clientId: string) => {
     const { signature } = await wallet.signMessage({
-      message: new TextEncoder().encode(wallet.address + ":" + clientId),
+      message: new TextEncoder().encode(
+        wallet.address + ":" + clientId
+      ),
     });
     return signature;
   };
 
   const getPublicKeyForSockets = () => {
-    return Buffer.from(wallet.account?.publicKey as Uint8Array).toString(
-      "base64"
-    );
+    return Buffer.from(
+      wallet.account?.publicKey as Uint8Array
+    ).toString("base64");
   };
 
   const on = async <T>(
