@@ -78,14 +78,18 @@ export const useMemotest = () => {
   );
 
   const handleSelectCard = useCallback(
-    ({
+    async ({
       position: alteredPosition,
       image,
       id,
     }: ISocket.ICardSelected) => {
       const position = alteredPosition - 1;
       let cardData!: ICard;
-
+      console.log(
+        await getObjectById<IGameBoard>(
+          room.details.gameboardObjectId
+        )
+      );
       setCardsRevealed((state) => {
         return state.map((c) => {
           if (c.position === position) {
@@ -161,11 +165,10 @@ export const useMemotest = () => {
           Number(card1.id),
           [card1.position + 1, card2.position + 1]
         );
-        socket.emit(SocketEventNames.changeTurn);
       } catch (error) {
-        console.log(error);
         setSignError("signed-error");
       }
+      socket.emit(SocketEventNames.changeTurn);
     }
   }, [
     room.details.gameboardObjectId,
@@ -382,11 +385,7 @@ export const useMemotest = () => {
           (turnDetails.playerTurnDuration - usedTimeByPlayer) / 1000
         )
       );
-      console.log(
-        Math.round(
-          (turnDetails.playerTurnDuration - usedTimeByPlayer) / 1000
-        )
-      );
+
       if (usedTimeByPlayer >= turnDetails.playerTurnDuration) {
         if (turn.flippedCardsAmount > 1) {
           setSignError("signed-error");
