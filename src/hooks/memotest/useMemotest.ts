@@ -31,7 +31,7 @@ const initMemotestTable: ICard[] = new Array(16)
   }));
 
 export const useMemotest = () => {
-  const { getObjectById } = useProvider();
+  const { getObjectById, on, unsubscribe } = useProvider();
   const contract = useContract();
   const dispatch = useDispatch<AppDispatch>();
   const socket = useSocket(Namespace.memotest);
@@ -169,6 +169,18 @@ export const useMemotest = () => {
         setSignError("signed-error");
       }
       socket.emit(SocketEventNames.changeTurn);
+      // setCardsRevealed((state) => {
+      //   const newState = [...state];
+      //   newState[card1.position].revealedByPlayer = "";
+      //   newState[card1.position].perPosition = 0 + "";
+      //   newState[card2.position].revealedByPlayer = "";
+      //   newState[card2.position].perPosition = 0 + "";
+      //   newState[card1.position].revealed = false;
+      //   newState[card1.position].clicked = false;
+      //   newState[card2.position].revealed = false;
+      //   newState[card2.position].clicked = false;
+      //   return newState;
+      // });
     }
   }, [
     room.details.gameboardObjectId,
@@ -176,7 +188,6 @@ export const useMemotest = () => {
     wallet.walletAddress,
     turn.flippedCards,
     contract,
-    socket,
   ]);
 
   // Init currentPlayer
@@ -199,6 +210,8 @@ export const useMemotest = () => {
   ]);
 
   useEffect(() => {
+    on<ISocket.ICardTurnedOver>("CardTurnedOver", handleSelectCard);
+    on<ISocket.ICardTurnedOver>("CardsPerFound", console.log);
     socket.listen(
       SocketEventNames.onCardTurnedOver,
       handleSelectCard
@@ -206,14 +219,11 @@ export const useMemotest = () => {
     return () => {
       socket.off(SocketEventNames.onCardTurnedOver, handleSelectCard);
     };
-  }, [handleSelectCard, socket]);
+  }, []);
 
   useEffect(() => {
-    socket.listen(SocketEventNames.onTurnChanged, goToNextTurn);
-    return () => {
-      socket.off(SocketEventNames.onTurnChanged, goToNextTurn);
-    };
-  }, [goToNextTurn, socket]);
+    on<{ who_plays: number }>("TurnChanged", goToNextTurn);
+  }, []);
 
   /*
    * Game logic
