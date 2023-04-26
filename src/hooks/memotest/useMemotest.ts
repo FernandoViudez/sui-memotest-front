@@ -3,7 +3,7 @@ import { ICurrentRoom } from "@/interfaces/GameRoom";
 import { IPlayer } from "@/interfaces/Player";
 import { ITurn, ITurnOnChain } from "@/interfaces/Turn";
 import { IGameBoard } from "@/interfaces/memotest/game-board.interface";
-import * as ISocket from "@/interfaces/memotest/game.interface";
+import * as IProvider from "@/interfaces/memotest/game.interface";
 import { IPlayerLeft } from "@/interfaces/memotest/player.interface";
 import { AppDispatch, RootState } from "@/store";
 import {
@@ -25,19 +25,19 @@ const initMemotestTable: ICard[] = new Array(16)
     id: "0",
     image: "",
     revealed: false,
-    perPosition: 0 + "", // NOTE Check per position when cards revealed
+    perPosition: 0 + "",
     position: index,
     revealedByPlayer: "",
   }));
 
 export const useMemotest = () => {
-  const { getObjectById, on, unsubscribe } = useProvider();
+  const [signProcessError, setSignProcess] = useState<
+    "no-sign-process" | "sign-in-progress"
+  >("no-sign-process");
+  const { getObjectById, on } = useProvider();
   const contract = useContract();
   const dispatch = useDispatch<AppDispatch>();
   const socket = useSocket(Namespace.memotest);
-  const [signError, setSignError] = useState<
-    "not-signed" | "signed-error" | "signed-correctly"
-  >("not-signed");
   const [cardsRevealed, setCardsRevealed] =
     useState<ICard[]>(initMemotestTable);
   const [turn, setTurn] = useState<ITurn>({
@@ -51,12 +51,14 @@ export const useMemotest = () => {
   const room = memotestState.currentRoom as ICurrentRoom;
   const [turnDetails, setWhoPlays] = useState<ITurnOnChain>({
     whoPlays: room.whoPlays ?? 1,
-    lastTurnDate: 0,
-    playerTurnDuration: 0,
+    lastTurnDate: Date.now(),
+    playerTurnDuration: 20000,
   });
   const [timeByPlayer, setTimeByPlayer] = useState<number>(0);
   const [currentPlayer, setCurrentPlayer] = useState<IPlayer>(
-    room.players.find((p) => p.playerTableID === 1) as IPlayer
+    room.players.find(
+      (p) => p.playerTableID === room.whoPlays
+    ) as IPlayer
   );
   const [thisPlayer, setThisPlayer] = useState<IPlayer>(
     room.players.find(
@@ -72,9 +74,29 @@ export const useMemotest = () => {
       }));
       socket.emit(SocketEventNames.turnOverCard, {
         position: position + 1,
-      } as ISocket.ITurnOverCard);
+      } as IProvider.ITurnOverCard);
     },
     [socket]
+  );
+
+  const handleCardFound = useCallback(
+    ({
+      finder,
+      position_1: alteredPosition1,
+      position_2: alteredPosition2,
+    }: IProvider.ICardFound) => {
+      const position1 = alteredPosition1 - 1;
+      const position2 = alteredPosition2 - 1;
+      setCardsRevealed((state) => {
+        const newState = [...state];
+        newState[position1].revealedByPlayer = finder;
+        newState[position1].revealed = true;
+        newState[position2].revealedByPlayer = finder;
+        newState[position2].revealed = true;
+        return newState;
+      });
+    },
+    []
   );
 
   const handleSelectCard = useCallback(
@@ -82,14 +104,9 @@ export const useMemotest = () => {
       position: alteredPosition,
       image,
       id,
-    }: ISocket.ICardSelected) => {
+    }: IProvider.ICardSelected) => {
       const position = alteredPosition - 1;
       let cardData!: ICard;
-      console.log(
-        await getObjectById<IGameBoard>(
-          room.details.gameboardObjectId
-        )
-      );
       setCardsRevealed((state) => {
         return state.map((c) => {
           if (c.position === position) {
@@ -114,29 +131,32 @@ export const useMemotest = () => {
         };
       });
     },
-    [getObjectById, room.details.gameboardObjectId]
+    []
   );
 
-  const goToNextTurn = useCallback(async (resp: ITurnOnChain) => {
-    setTurn({
-      flippedCardsAmount: 0,
-      flippedCards: new Array(),
-      status: "finished",
-    });
-    setWhoPlays(resp);
-  }, []);
+  const goToNextTurn = useCallback(
+    async (resp: { who_plays: number }) => {
+      setTurn({
+        flippedCardsAmount: 0,
+        flippedCards: new Array(),
+        status: "finished",
+      });
+      setWhoPlays({
+        lastTurnDate: Date.now(),
+        playerTurnDuration: 20000,
+        whoPlays: resp.who_plays,
+      });
+    },
+    []
+  );
 
   const comproveFlippedCards = useCallback(async () => {
     const [card1, card2] = turn.flippedCards;
     if (card1.id === card2.id) {
       setCardsRevealed((state) => {
         const newState = [...state];
-        newState[card1.position].revealedByPlayer =
-          currentPlayer?.walletAddress;
         newState[card1.position].perPosition =
           card2.position + 1 + "";
-        newState[card2.position].revealedByPlayer =
-          currentPlayer?.walletAddress;
         newState[card2.position].perPosition =
           card1.position + 1 + "";
         return newState;
@@ -157,35 +177,28 @@ export const useMemotest = () => {
       setWhoPlays((state) => ({
         ...state,
         lastTurnDate: Date.now(),
-        playerTurnDuration: 45000,
+        playerTurnDuration: 30000,
       }));
+      setSignProcess("sign-in-progress");
       try {
         await contract.turnOverCard(
           room.details.gameboardObjectId as string,
           Number(card1.id),
           [card1.position + 1, card2.position + 1]
         );
+        socket.emit(SocketEventNames.changeTurn);
       } catch (error) {
-        setSignError("signed-error");
+        setWhoPlays((state) => ({
+          ...state,
+          lastTurnDate: Date.now(),
+          playerTurnDuration: 3000,
+        }));
       }
-      socket.emit(SocketEventNames.changeTurn);
-      // setCardsRevealed((state) => {
-      //   const newState = [...state];
-      //   newState[card1.position].revealedByPlayer = "";
-      //   newState[card1.position].perPosition = 0 + "";
-      //   newState[card2.position].revealedByPlayer = "";
-      //   newState[card2.position].perPosition = 0 + "";
-      //   newState[card1.position].revealed = false;
-      //   newState[card1.position].clicked = false;
-      //   newState[card2.position].revealed = false;
-      //   newState[card2.position].clicked = false;
-      //   return newState;
-      // });
     }
   }, [
     turn.flippedCards,
     wallet.walletAddress,
-    currentPlayer.walletAddress,
+    currentPlayer?.walletAddress,
     socket,
     contract,
     room.details.gameboardObjectId,
@@ -193,48 +206,41 @@ export const useMemotest = () => {
 
   // Init currentPlayer
   useEffect(() => {
-    setCurrentPlayer(
-      room.players.find(
+    setCurrentPlayer(() => {
+      const user = room.players.find(
         (p) => p.playerTableID === turnDetails.whoPlays
-      ) as IPlayer
-    );
-    setThisPlayer(
-      room.players.find(
-        (p) => p.walletAddress === thisPlayer.walletAddress
-      ) as IPlayer
-    );
-  }, [
-    thisPlayer.walletAddress,
-    wallet.walletAddress,
-    turnDetails.whoPlays,
-    room,
-  ]);
+      ) as IPlayer;
+      return {
+        ...user,
+        isCurrentPlayer: user?.playerTableID === turnDetails.whoPlays,
+      };
+    });
+    setThisPlayer((state) => {
+      const user = room.players.find(
+        (p) => p.walletAddress === wallet.walletAddress
+      ) as IPlayer;
+      return {
+        ...state,
+        isCurrentPlayer: user?.playerTableID === turnDetails.whoPlays,
+      };
+    });
+  }, [room.players, turnDetails.whoPlays, wallet.walletAddress]);
 
   useEffect(() => {
-    let cardTurnedOverSubs: number;
-    let cardsPerFoundSubs: number;
-    on<ISocket.ICardTurnedOver>(
-      "CardTurnedOver",
+    socket.listen(
+      SocketEventNames.onCardTurnedOver,
       handleSelectCard
-    ).then((id) => (cardTurnedOverSubs = id));
-    on<ISocket.ICardTurnedOver>("CardsPerFound", console.log).then(
-      (id) => (cardsPerFoundSubs = id)
     );
     return () => {
-      unsubscribe(cardTurnedOverSubs);
-      unsubscribe(cardsPerFoundSubs);
+      socket.off(SocketEventNames.onCardTurnedOver, handleSelectCard);
     };
-  }, [handleSelectCard, on, unsubscribe]);
+  }, [handleSelectCard, socket]);
 
   useEffect(() => {
-    let turnChangedOverSubs: number;
-    on<ITurnOnChain>("TurnChanged", goToNextTurn).then(
-      (id) => (turnChangedOverSubs = id)
-    );
-    return () => {
-      unsubscribe(turnChangedOverSubs);
-    };
-  }, [goToNextTurn, on, unsubscribe]);
+    on<IProvider.ICardFound>("CardsPerFound", handleCardFound);
+    on<{ who_plays: number }>("TurnChanged", goToNextTurn);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /*
    * Game logic
@@ -254,6 +260,37 @@ export const useMemotest = () => {
       const resp = await getObjectById<IGameBoard>(
         room.details.gameboardObjectId
       );
+      setCardsRevealed((state) => {
+        return state.map((c) => {
+          if (
+            c.revealed &&
+            (!c.revealedByPlayer || !c.revealedByPlayer.length)
+          ) {
+            return {
+              ...c,
+              revealed: false,
+              clicked: false,
+              revealedByPlayer: "",
+            };
+          } else if (
+            c.revealed &&
+            (!c.revealedByPlayer || !c.revealedByPlayer.length) &&
+            c.revealedByPlayer !==
+              resp.data.cards.find(
+                ({ fields: { id } }) => id === c.id
+              )?.fields.found_by
+          ) {
+            return {
+              ...c,
+              revealed: false,
+              clicked: false,
+              revealedByPlayer: "",
+            };
+          }
+          return c;
+        });
+      });
+      setSignProcess("no-sign-process");
       if (resp.data.cards_found < 8) {
         dispatch(
           setPlayerTurn({
@@ -406,11 +443,7 @@ export const useMemotest = () => {
           (turnDetails.playerTurnDuration - usedTimeByPlayer) / 1000
         )
       );
-
       if (usedTimeByPlayer >= turnDetails.playerTurnDuration) {
-        if (turn.flippedCardsAmount > 1) {
-          setSignError("signed-error");
-        }
         socket.emit(SocketEventNames.requestTimeOut);
         clearInterval(_intervalId);
       }
@@ -426,39 +459,6 @@ export const useMemotest = () => {
     turnDetails.playerTurnDuration,
   ]);
 
-  useEffect(() => {
-    if (signError !== "signed-error") return;
-
-    setCardsRevealed((state) => {
-      const [card1, card2] = turn.flippedCards;
-      return state
-        .map((c) => {
-          if (c.id === card1.id) {
-            return {
-              ...c,
-              revealed: false,
-              clicked: false,
-              revealedByPlayer: "",
-            };
-          }
-          return c;
-        })
-        .map((c) => {
-          if (c.id === card2.id) {
-            return {
-              ...c,
-              revealed: false,
-              clicked: false,
-              revealedByPlayer: "",
-            };
-          }
-          return c;
-        });
-    });
-
-    setSignError("not-signed");
-  }, [signError, turn.flippedCards]);
-
   return {
     whoPlays: memotestState.currentRoom?.whoPlays ?? 1,
     players: room.players as IPlayer[],
@@ -466,6 +466,7 @@ export const useMemotest = () => {
     currentPlayer,
     cardsRevealed,
     onRevealCard,
+    signProcessError,
     timeByPlayer,
     thisPlayer,
     turn,

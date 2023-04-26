@@ -6,10 +6,9 @@ export const MemotestView = () => {
   const {
     players: [player1, player2, player3 = null, player4 = null],
     cardsRevealed,
-    room,
     thisPlayer,
     timeByPlayer,
-    whoPlays,
+    signProcessError,
     onRevealCard,
     turn,
   } = useMemotest();
@@ -41,7 +40,7 @@ export const MemotestView = () => {
                     cannotBeFlipped={
                       !thisPlayer?.isCurrentPlayer ||
                       turn.status === "finished" ||
-                      // c.clicked ||
+                      signProcessError === "sign-in-progress" ||
                       !!c?.revealedByPlayer?.length
                     }
                     isFlipped={c.revealed}

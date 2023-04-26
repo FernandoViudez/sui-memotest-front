@@ -1,118 +1,117 @@
-import { environment } from "@/environment/enviornment";
-import { ProviderResponse } from "@/interfaces/ProviderResponse";
-import { JsonRpcProvider, SuiEvent } from "@mysten/sui.js";
-import { useWallet } from "@suiet/wallet-kit";
-import { useEffect, useState } from "react";
+import { TransactionBlock } from "@mysten/sui.js";
+import { WalletContextState } from "@suiet/wallet-kit";
+import { environment } from "../environment/enviornment";
 import { provider } from "./sui-provider.service";
-export const useProvider = () => {
-  const wallet = useWallet();
-  const [localProvider, setProvider] = useState(
-    {} as JsonRpcProvider
-  );
 
-  useEffect(() => {
-    if (!wallet.connected) return;
-    setProvider(provider);
-  }, [wallet.connected]);
+export class MemotestContract {
+  constructor(private readonly wallet: WalletContextState) {}
 
-  const getObjectById = async <T>(
-    objectId: string
-  ): Promise<ProviderResponse<T>> => {
-    try {
-      const obj = await provider?.getObject({
-        id: objectId,
-        options: {
-          showContent: true,
-          showOwner: true,
-          showType: true,
-        },
-      });
-      if (obj?.error) {
-        return {
-          data: null as T,
-          error: {
-            message: obj.error?.code,
-            details: JSON.stringify(obj.error),
-          },
-        };
-      }
-      return {
-        data: (obj.data?.content as any)?.fields as T,
-      };
-    } catch (error: any) {
-      return {
-        data: null as T,
-        error: {
-          message: error?.message || error?.msg,
-          details: error,
-        },
-      };
-    }
-  };
+  private async splitCoin(requiredBalance: number) {
+    const tx = new TransactionBlock();
+    const [coin] = tx.splitCoins(tx.gas, [tx.pure(requiredBalance)]);
+    return {
+      tx,
+      coin,
+    };
+  }
 
-  const getMyCoins = async () => {
-    const isValidWallet = (wallet?.address?.length || 0) / 2 == 33;
-    if (!isValidWallet) {
-      return alert("invalid array length 20, expecting 32");
-    }
-    const { data } = await provider?.getAllCoins({
-      owner: wallet?.address as string,
+  private async setBudget() {
+    const { totalBalance } = await provider.getBalance({
+      owner: this.wallet.address as string,
+      coinType: "0x2::sui::SUI",
     });
-    return data;
-  };
+    return Number(
+      (Number(totalBalance) / 2).toString().split(".")[0]
+    );
+  }
 
-  const getSignatureForSockets = async (clientId: string) => {
-    const { signature } = await wallet.signMessage({
-      message: new TextEncoder().encode(
-        wallet.address + ":" + clientId
-      ),
+  async createGame(balanceToBet: number): Promise<string> {
+    const { tx, coin } = await this.splitCoin(balanceToBet);
+    tx.moveCall({
+      target: `${environment.memotest.package}::memotest::new_game`,
+      arguments: [tx.pure(environment.memotest.config), coin],
     });
-    return signature;
-  };
-
-  const getPublicKeyForSockets = () => {
-    return Buffer.from(
-      wallet.account?.publicKey as Uint8Array
-    ).toString("base64");
-  };
-
-  const on = async <T>(
-    type: "CardTurnedOver" | "TurnChanged" | "CardsPerFound",
-    cb: (args: T) => any
-  ) => {
-    const subscriptionId = await provider.subscribeEvent({
-      filter: {
-        MoveModule: {
-          module: "memotest",
-          package: environment.memotest.package,
-        },
-      },
-      onMessage(event: SuiEvent) {
-        if (
-          event.type ==
-          environment.memotest.package + "::memotest::" + type
-        ) {
-          cb(event.parsedJson as T);
-        }
+    tx.transferObjects([coin], tx.pure(this.wallet.address));
+    tx.setGasBudget(await this.setBudget());
+    const res = await this.wallet.signAndExecuteTransactionBlock({
+      transactionBlock: tx as any,
+      options: {
+        showEffects: true,
       },
     });
-    return subscriptionId;
-  };
+    const gameBoard = res?.effects?.created?.find(
+      (el) => (el.owner as any)["Shared"]
+    );
+    return gameBoard?.reference.objectId as string;
+  }
 
-  const unsubscribe = async (subscriptionId: number) => {
-    if (!subscriptionId) return;
-    await provider.unsubscribeEvent({
-      id: subscriptionId,
+  async joinRoom(gameBoard: string, balanceToBet: number) {
+    const { coin, tx } = await this.splitCoin(balanceToBet);
+    tx.moveCall({
+      target: `${environment.memotest.package}::memotest::join`,
+      arguments: [tx.pure(gameBoard), coin],
     });
-  };
+    tx.transferObjects([coin], tx.pure(this.wallet.address));
+    tx.setGasBudget(await this.setBudget());
+    const res = await this.wallet.signAndExecuteTransactionBlock({
+      transactionBlock: tx as any,
+    });
+    console.log("[Join]", res?.effects?.status);
+  }
 
-  return {
-    provider: localProvider,
-    getObjectById,
-    getMyCoins,
-    getSignatureForSockets,
-    getPublicKeyForSockets,
-    on,
-    unsubscribe,
-  };
-};
+  async startGame(gameBoard: string) {
+    const tx = new TransactionBlock();
+    tx.moveCall({
+      target: `${environment.memotest.package}::memotest::start_game`,
+      arguments: [tx.pure(gameBoard)],
+    });
+    tx.setGasBudget(await this.setBudget());
+    const res = await this.wallet.signAndExecuteTransactionBlock({
+      transactionBlock: tx as any,
+      options: {
+        showEffects: true,
+      },
+    });
+    console.log("[Start Game]", res?.effects?.status);
+  }
+
+  async turnOverCard(
+    gameBoard: string,
+    cardId: number,
+    cardsLocation: number[]
+  ) {
+    const tx = new TransactionBlock();
+    tx.moveCall({
+      target: `${environment.memotest.package}::memotest::turn_card_over`,
+      arguments: [
+        tx.pure(gameBoard),
+        tx.pure(cardId),
+        tx.pure(cardsLocation),
+      ],
+    });
+    tx.setGasBudget(await this.setBudget());
+    const res = await this.wallet.signAndExecuteTransactionBlock({
+      transactionBlock: tx as any,
+      options: {
+        showEffects: true,
+      },
+    });
+    console.log("[Turn Over Card]", res?.effects?.status);
+  }
+
+  async claimPrize(gameBoard: string) {
+    const tx = new TransactionBlock();
+    tx.moveCall({
+      target: `${environment.memotest.package}::memotest::claim_prize`,
+      arguments: [tx.pure(gameBoard)],
+    });
+    tx.setGasBudget(await this.setBudget());
+    const res = await this.wallet.signAndExecuteTransactionBlock({
+      transactionBlock: tx as any,
+      options: {
+        showEffects: true,
+      },
+    });
+    console.log("[Claim prize]", res?.effects?.status);
+  }
+}

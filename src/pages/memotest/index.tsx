@@ -27,8 +27,7 @@ export default function Memotest() {
   const socket = useSocket(Namespace.memotest);
 
   const handleError = useCallback((error: SocketError) => {
-    console.log(error);
-    // alert(JSON.stringify(error)); // TODO Restore
+    alert(JSON.stringify(error));
   }, []);
 
   useEffect(() => {
