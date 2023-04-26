@@ -1,22 +1,30 @@
 import { IPlayer } from "@/interfaces/Player";
-// import Image from 'next/image';
-import { memo } from "react";
+import { memo, useState } from "react";
 import styles from "./Player.module.css";
+import { useWallet } from "@suiet/wallet-kit";
 
 const PlayerComponent = ({ player }: { player: IPlayer }) => {
+  const wallet = useWallet();
   return (
     <div className="d-flex w-100 m-auto flex-column justify-content-center align-items-center">
       <figure className="mb-2 w-100 d-flex justify-content-center position-relative">
-        {/* Image */}
         <div
           className={
             player.isCurrentPlayer
-              ? `${styles.playerCard} ${styles.currentPlayer}`
-              : styles.playerCard
+              ? `${styles.playerCard} ${styles.currentPlayer} ${
+                  styles["player-" + player.playerTableID]
+                }`
+              : `${styles.playerCard} ${
+                  styles["player-" + player.playerTableID]
+                }`
           }
         ></div>
       </figure>
-      <span className="text-secondary">
+      <span
+        className={`text-secondary ${
+          player.walletAddress == wallet.address ? styles.meIndicator : ""
+        }`}
+      >
         {player?.name || player.walletAddress.slice(0, 7) + "..."}
       </span>
     </div>
