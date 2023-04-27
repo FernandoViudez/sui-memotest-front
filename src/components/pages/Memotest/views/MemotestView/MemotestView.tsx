@@ -6,8 +6,9 @@ export const MemotestView = () => {
   const {
     players: [player1, player2, player3 = null, player4 = null],
     cardsRevealed,
-    room,
     thisPlayer,
+    timeByPlayer,
+    signProcessError,
     onRevealCard,
     turn,
   } = useMemotest();
@@ -16,8 +17,12 @@ export const MemotestView = () => {
     <>
       <div className="row p-0 m-0 h-100">
         <article className="col-2 d-flex flex-column justify-content-between align-items-center">
-          {player1 && <Player player={player1} />}
-          {player3 && <Player player={player3} />}
+          {player1 && (
+            <Player timeByPlayer={timeByPlayer} player={player1} />
+          )}
+          {player3 && (
+            <Player timeByPlayer={timeByPlayer} player={player3} />
+          )}
         </article>
         <article className="col p-0 ">
           {/* Memotest Container  & Layout */}
@@ -35,7 +40,7 @@ export const MemotestView = () => {
                     cannotBeFlipped={
                       !thisPlayer?.isCurrentPlayer ||
                       turn.status === "finished" ||
-                      // c.clicked ||
+                      signProcessError === "sign-in-progress" ||
                       !!c?.revealedByPlayer?.length
                     }
                     isFlipped={c.revealed}
@@ -47,8 +52,12 @@ export const MemotestView = () => {
           </div>
         </article>
         <article className="col-2 d-flex flex-column justify-content-between align-items-center">
-          {player2 && <Player player={player2} />}
-          {player4 && <Player player={player4} />}
+          {player2 && (
+            <Player timeByPlayer={timeByPlayer} player={player2} />
+          )}
+          {player4 && (
+            <Player timeByPlayer={timeByPlayer} player={player4} />
+          )}
         </article>
       </div>
     </>

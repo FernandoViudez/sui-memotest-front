@@ -5,3 +5,9 @@ export interface ITurn {
   flippedCardsAmount: number;
   flippedCards: ICard[];
 }
+
+export interface ITurnOnChain {
+  whoPlays: number;
+  playerTurnDuration: number;
+  lastTurnDate: number;
+}

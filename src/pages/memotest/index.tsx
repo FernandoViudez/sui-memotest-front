@@ -56,7 +56,7 @@ export default function Memotest() {
     return (
       <>
         <Head>
-          <title>Memotest</title>
+          <title>Game Finished</title>
         </Head>
         <div className={`container p-3 ${styles.mainContainer}`}>
           <GameFinishedView />
@@ -67,7 +67,7 @@ export default function Memotest() {
     return (
       <>
         <Head>
-          <title>Memotest</title>
+          <title>Lobby</title>
         </Head>
         <div className={`container p-3 ${styles.mainContainer}`}>
           <Lobby />
