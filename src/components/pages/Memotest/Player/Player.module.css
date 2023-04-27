@@ -4,6 +4,12 @@
   width: 70px;
   background-color: red;
   transition: box-shadow 500ms;
+  background-size: 100%;
+}
+
+.meIndicator {
+  color: white !important;
+  font-weight: bold;
 }
 
 .currentPlayer {
@@ -24,4 +30,17 @@
 .playerTime {
   position: absolute;
   bottom: 0px;
+}
+
+.player-1 {
+  background-image: url("../../../../../public/henkos.png");
+}
+.player-2 {
+  background-image: url("../../../../../public/lauti-2.png");
+}
+.player-3 {
+  background-image: url("../../../../../public/lutic.png");
+}
+.player-4 {
+  background-image: url("../../../../../public/ruthic.png");
 }

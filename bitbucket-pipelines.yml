@@ -1,0 +1,25 @@
+image: node:16.14.2
+
+definitions:
+  steps:
+    - step: &S3-deploy-dev
+        name: Deploy to env dev
+        script:
+          - pipe: atlassian/aws-s3-deploy:0.5.0
+            variables:
+              S3_BUCKET: "dev-games.indelve.com"
+              LOCAL_PATH: "out"
+              DELETE_FLAG: "true"
+
+pipelines:
+  branches:
+    dev:
+      - step:
+          name: Build dist
+          image: node:16.14.2
+          script:
+            - npm install
+            - npm run build
+          artifacts:
+            - out/**
+      - step: *S3-deploy-dev
