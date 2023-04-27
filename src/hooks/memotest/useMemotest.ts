@@ -19,16 +19,14 @@ import { useContract } from "./useContract";
 import { useProvider } from "./useProvider";
 import { useSocket } from "./useSocket";
 
-const initMemotestTable: ICard[] = new Array(16)
-  .fill(0)
-  .map((v, index) => ({
-    id: "0",
-    image: "",
-    revealed: false,
-    perPosition: 0 + "",
-    position: index,
-    revealedByPlayer: "",
-  }));
+const initMemotestTable: ICard[] = new Array(16).fill(0).map((v, index) => ({
+  id: "0",
+  image: "",
+  revealed: false,
+  perPosition: 0 + "",
+  position: index,
+  revealedByPlayer: "",
+}));
 
 export const useMemotest = () => {
   const [signProcessError, setSignProcess] = useState<
@@ -56,9 +54,7 @@ export const useMemotest = () => {
   });
   const [timeByPlayer, setTimeByPlayer] = useState<number>(0);
   const [currentPlayer, setCurrentPlayer] = useState<IPlayer>(
-    room.players.find(
-      (p) => p.playerTableID === room.whoPlays
-    ) as IPlayer
+    room.players.find((p) => p.playerTableID === room.whoPlays) as IPlayer
   );
   const [thisPlayer, setThisPlayer] = useState<IPlayer>(
     room.players.find(
@@ -134,31 +130,26 @@ export const useMemotest = () => {
     []
   );
 
-  const goToNextTurn = useCallback(
-    async (resp: { who_plays: number }) => {
-      setTurn({
-        flippedCardsAmount: 0,
-        flippedCards: new Array(),
-        status: "finished",
-      });
-      setWhoPlays({
-        lastTurnDate: Date.now(),
-        playerTurnDuration: 20000,
-        whoPlays: resp.who_plays,
-      });
-    },
-    []
-  );
+  const goToNextTurn = useCallback(async (resp: { who_plays: number }) => {
+    setTurn({
+      flippedCardsAmount: 0,
+      flippedCards: new Array(),
+      status: "finished",
+    });
+    setWhoPlays({
+      lastTurnDate: Date.now(),
+      playerTurnDuration: 20000,
+      whoPlays: resp.who_plays,
+    });
+  }, []);
 
   const comproveFlippedCards = useCallback(async () => {
     const [card1, card2] = turn.flippedCards;
     if (card1.id === card2.id) {
       setCardsRevealed((state) => {
         const newState = [...state];
-        newState[card1.position].perPosition =
-          card2.position + 1 + "";
-        newState[card2.position].perPosition =
-          card1.position + 1 + "";
+        newState[card1.position].perPosition = card2.position + 1 + "";
+        newState[card2.position].perPosition = card1.position + 1 + "";
         return newState;
       });
     } else {
@@ -186,7 +177,6 @@ export const useMemotest = () => {
           Number(card1.id),
           [card1.position + 1, card2.position + 1]
         );
-        socket.emit(SocketEventNames.changeTurn);
       } catch (error) {
         setWhoPlays((state) => ({
           ...state,
@@ -199,7 +189,6 @@ export const useMemotest = () => {
     turn.flippedCards,
     wallet.walletAddress,
     currentPlayer?.walletAddress,
-    socket,
     contract,
     room.details.gameboardObjectId,
   ]);
@@ -227,10 +216,7 @@ export const useMemotest = () => {
   }, [room.players, turnDetails.whoPlays, wallet.walletAddress]);
 
   useEffect(() => {
-    socket.listen(
-      SocketEventNames.onCardTurnedOver,
-      handleSelectCard
-    );
+    socket.listen(SocketEventNames.onCardTurnedOver, handleSelectCard);
     return () => {
       socket.off(SocketEventNames.onCardTurnedOver, handleSelectCard);
     };
@@ -238,6 +224,7 @@ export const useMemotest = () => {
 
   useEffect(() => {
     on<IProvider.ICardFound>("CardsPerFound", handleCardFound);
+    on<IProvider.ICardTurnedOver>("CardTurnedOver", handleSelectCard);
     on<{ who_plays: number }>("TurnChanged", goToNextTurn);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -276,9 +263,8 @@ export const useMemotest = () => {
             c.revealed &&
             (!c.revealedByPlayer || !c.revealedByPlayer.length) &&
             c.revealedByPlayer !==
-              resp.data.cards.find(
-                ({ fields: { id } }) => id === c.id
-              )?.fields.found_by
+              resp.data.cards.find(({ fields: { id } }) => id === c.id)?.fields
+                .found_by
           ) {
             return {
               ...c,
@@ -329,13 +315,9 @@ export const useMemotest = () => {
       }[] = [playersScore[0]];
 
       for (let i = 1; i < playersScore.length; i++) {
-        if (
-          winners[0].cardsRevealed < playersScore[i].cardsRevealed
-        ) {
+        if (winners[0].cardsRevealed < playersScore[i].cardsRevealed) {
           winners[0] = playersScore[i];
-        } else if (
-          winners[0].cardsRevealed === playersScore[i].cardsRevealed
-        ) {
+        } else if (winners[0].cardsRevealed === playersScore[i].cardsRevealed) {
           winners.push(playersScore[i]);
         }
       }
@@ -377,9 +359,7 @@ export const useMemotest = () => {
     async (data: IPlayerLeft) => {
       const {
         data: { who_plays, cards_found },
-      } = await getObjectById<IGameBoard>(
-        room.details.gameboardObjectId
-      );
+      } = await getObjectById<IGameBoard>(room.details.gameboardObjectId);
       // room.players.length - 1 because the state neither the contract were updated yet  when this method is excecuted
       if (cards_found < 8 && room.players.length - 1 > 1) {
         dispatch(removePlayer(data));
@@ -392,8 +372,7 @@ export const useMemotest = () => {
               winners: [
                 {
                   cardsRevealed: cardsRevealed.filter(
-                    (c) =>
-                      c?.revealedByPlayer === wallet.walletAddress
+                    (c) => c?.revealedByPlayer === wallet.walletAddress
                   )?.length,
                   walletAddress: wallet.walletAddress,
                 },
@@ -401,8 +380,7 @@ export const useMemotest = () => {
               players: [
                 {
                   cardsRevealed: cardsRevealed.filter(
-                    (c) =>
-                      c?.revealedByPlayer === wallet.walletAddress
+                    (c) => c?.revealedByPlayer === wallet.walletAddress
                   )?.length,
                   walletAddress: wallet.walletAddress,
                 },
@@ -439,9 +417,7 @@ export const useMemotest = () => {
     const _intervalId = setInterval(() => {
       const usedTimeByPlayer = Date.now() - turnDetails.lastTurnDate;
       setTimeByPlayer(
-        Math.round(
-          (turnDetails.playerTurnDuration - usedTimeByPlayer) / 1000
-        )
+        Math.round((turnDetails.playerTurnDuration - usedTimeByPlayer) / 1000)
       );
       if (usedTimeByPlayer >= turnDetails.playerTurnDuration) {
         socket.emit(SocketEventNames.requestTimeOut);
